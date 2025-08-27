@@ -42,10 +42,10 @@ def create_dbt_cli_tool_definitions(config: DbtCliConfig) -> list[ToolDefinition
 
             if selector:
                 selector_params = str(selector).split(" ")
-                command = command + ["--select"] + selector_params
+                command.extend(["--select"] + selector_params)
 
             if isinstance(resource_type, Iterable):
-                command = command + ["--resource-type"] + resource_type
+                command.extend(["--resource-type"] + resource_type)
 
             full_command = command.copy()
             # Add --quiet flag to specific commands to reduce context window usage
