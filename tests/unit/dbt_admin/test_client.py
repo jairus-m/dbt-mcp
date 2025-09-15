@@ -290,7 +290,12 @@ def test_get_job_run_details(mock_request, client):
             "id": 100,
             "status": 10,
             "run_steps": [
-                {"id": 1, "name": "dbt run", "truncated_debug_logs": "log data"}
+                {
+                    "id": 1,
+                    "name": "dbt run",
+                    "truncated_debug_logs": "truncated log data",
+                    "logs": "log data",
+                }
             ],
         }
     }
@@ -300,8 +305,9 @@ def test_get_job_run_details(mock_request, client):
     result = client.get_job_run_details(12345, 100)
 
     assert result["id"] == 100
-    # Verify truncated_debug_logs are removed
+    # Verify truncated_debug_logs and logs are removed
     assert "truncated_debug_logs" not in result["run_steps"][0]
+    assert "logs" not in result["run_steps"][0]
 
     mock_request.assert_called_once_with(
         "GET",
