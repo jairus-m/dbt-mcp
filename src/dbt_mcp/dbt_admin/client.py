@@ -173,9 +173,10 @@ class DbtAdminAPIClient:
         )
         data = result.get("data", {})
 
-        # we remove the truncated debug logs, they are not very relevant
+        # we remove the truncated debug logs and logs, they are not very relevant
         for step in data.get("run_steps", []):
             step.pop("truncated_debug_logs", None)
+            step.pop("logs", None)
 
         return data
 
