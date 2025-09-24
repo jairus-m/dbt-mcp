@@ -4,6 +4,11 @@ from typing import Any, Optional
 from pydantic import ValidationError
 
 from dbt_mcp.dbt_admin.client import DbtAdminAPIClient
+from dbt_mcp.dbt_admin.constants import (
+    JobRunStatus,
+    STATUS_MAP,
+    SOURCE_FRESHNESS_STEP_NAME,
+)
 from dbt_mcp.dbt_admin.run_results_errors.config import (
     RunDetailsSchema,
     RunResultsArtifactSchema,
@@ -12,12 +17,6 @@ from dbt_mcp.dbt_admin.run_results_errors.config import (
 )
 
 logger = logging.getLogger(__name__)
-
-# Should re-use the JobRunStatus enum / STATUS_MAP in dbt_admin/tools.py somehow ?
-# Will lead to circular import so keeping separate for now
-ERROR_STATUS_CODES = [20]
-ERROR_STATUS_HUMANIZED = ["error", "fail"]
-SOURCE_FRESHNESS_STEP_NAME = "source freshness"
 
 
 class ErrorFetcher:
@@ -70,7 +69,7 @@ class ErrorFetcher:
     def _find_failed_step(self, run_details: dict) -> Optional[dict[str, Any]]:
         """Find the first failed step in the run."""
         for step in run_details.get("run_steps", []):
-            if step.get("status") in ERROR_STATUS_CODES:
+            if step.get("status") == STATUS_MAP[JobRunStatus.ERROR]:
                 return {
                     "name": step.get("name"),
                     "finished_at": step.get("finished_at"),
@@ -133,7 +132,7 @@ class ErrorFetcher:
         """Extract error results from run results."""
         errors = []
         for result in results:
-            if result.status in ERROR_STATUS_HUMANIZED:
+            if result.status in [JobRunStatus.ERROR.value, "fail"]:
                 error = ErrorResultSchema(
                     unique_id=result.unique_id,
                     relation_name=result.relation_name,

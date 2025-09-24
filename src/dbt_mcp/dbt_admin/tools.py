@@ -1,12 +1,12 @@
 import logging
 from collections.abc import Sequence
-from enum import Enum
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
 from dbt_mcp.config.config import AdminApiConfig
 from dbt_mcp.dbt_admin.client import DbtAdminAPIClient
+from dbt_mcp.dbt_admin.constants import JobRunStatus, STATUS_MAP
 from dbt_mcp.dbt_admin.run_results_errors import ErrorFetcher
 from dbt_mcp.prompts.prompts import get_prompt
 from dbt_mcp.tools.annotations import create_tool_annotations
@@ -15,27 +15,6 @@ from dbt_mcp.tools.register import register_tools
 from dbt_mcp.tools.tool_names import ToolName
 
 logger = logging.getLogger(__name__)
-
-
-class JobRunStatus(str, Enum):
-    """Enum for job run status values."""
-
-    QUEUED = "queued"
-    STARTING = "starting"
-    RUNNING = "running"
-    SUCCESS = "success"
-    ERROR = "error"
-    CANCELLED = "cancelled"
-
-
-STATUS_MAP = {
-    JobRunStatus.QUEUED: 1,
-    JobRunStatus.STARTING: 2,
-    JobRunStatus.RUNNING: 3,
-    JobRunStatus.SUCCESS: 10,
-    JobRunStatus.ERROR: 20,
-    JobRunStatus.CANCELLED: 30,
-}
 
 
 def create_admin_api_tool_definitions(
