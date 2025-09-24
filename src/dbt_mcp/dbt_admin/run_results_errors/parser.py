@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 from pydantic import ValidationError
 
 from dbt_mcp.dbt_admin.client import DbtAdminAPIClient
@@ -26,7 +26,7 @@ class ErrorFetcher:
     def __init__(
         self,
         run_id: int,
-        run_details: Dict[str, Any],
+        run_details: dict[str, Any],
         client: DbtAdminAPIClient,
     ):
         """
@@ -41,7 +41,7 @@ class ErrorFetcher:
         self.run_details = run_details
         self.client = client
 
-    def analyze_run_errors(self) -> Dict[str, Any]:
+    def analyze_run_errors(self) -> dict[str, Any]:
         """
         Parse the run data and return simplified failure details with validation.
 
@@ -67,7 +67,7 @@ class ErrorFetcher:
             logger.error(f"Error analyzing run {self.run_id}: {e}")
             return self._create_error_result(str(e))
 
-    def _find_failed_step(self, run_details: Dict) -> Optional[Dict[str, Any]]:
+    def _find_failed_step(self, run_details: dict) -> Optional[dict[str, Any]]:
         """Find the first failed step in the run."""
         for step in run_details.get("run_steps", []):
             if step.get("status") in ERROR_STATUS_CODES:
@@ -79,7 +79,7 @@ class ErrorFetcher:
                 }
         return None
 
-    def _get_failure_details(self, failed_step: Dict) -> Dict[str, Any]:
+    def _get_failure_details(self, failed_step: dict) -> dict[str, Any]:
         """Get simplified failure information from failed step."""
         run_results_content = self._fetch_run_results_artifact(failed_step)
 
@@ -88,7 +88,7 @@ class ErrorFetcher:
 
         return self._parse_run_results(run_results_content, failed_step)
 
-    def _fetch_run_results_artifact(self, failed_step: Dict[str, Any]) -> Optional[str]:
+    def _fetch_run_results_artifact(self, failed_step: dict[str, Any]) -> Optional[str]:
         """Fetch run_results.json artifact for the failed step."""
         step_index = failed_step.get("index")
 
@@ -110,8 +110,8 @@ class ErrorFetcher:
             return None
 
     def _parse_run_results(
-        self, run_results_content: str, failed_step: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, run_results_content: str, failed_step: dict[str, Any]
+    ) -> dict[str, Any]:
         """Parse run_results.json content and extract errors."""
         try:
             run_results_data = json.loads(run_results_content)
@@ -128,8 +128,8 @@ class ErrorFetcher:
             return self._handle_artifact_error(failed_step, e)
 
     def _extract_errors_from_results(
-        self, results: List[Any]
-    ) -> List[ErrorResultSchema]:
+        self, results: list[Any]
+    ) -> list[ErrorResultSchema]:
         """Extract error results from run results."""
         errors = []
         for result in results:
@@ -144,10 +144,10 @@ class ErrorFetcher:
 
     def _build_error_response(
         self,
-        errors: List[ErrorResultSchema],
-        failed_step: Dict[str, Any],
+        errors: list[ErrorResultSchema],
+        failed_step: dict[str, Any],
         target: Optional[str],
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Build the final error response structure."""
         if errors:
             return {
@@ -172,7 +172,7 @@ class ErrorFetcher:
         target: Optional[str] = None,
         step_name: Optional[str] = None,
         finished_at: Optional[str] = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a standardized error results using MultiErrorResultSchema."""
         error = ErrorResultSchema(
             unique_id=unique_id,
@@ -188,8 +188,8 @@ class ErrorFetcher:
         return result.model_dump()
 
     def _handle_artifact_error(
-        self, failed_step: Dict, error: Optional[Exception] = None
-    ) -> Dict[str, Any]:
+        self, failed_step: dict, error: Optional[Exception] = None
+    ) -> dict[str, Any]:
         """Handle cases where run_results.json is not available."""
         step_name = failed_step.get("name", "")
 

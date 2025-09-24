@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 from pydantic import BaseModel
 
 
@@ -17,7 +17,7 @@ class RunStepSchema(BaseModel):
 class RunDetailsSchema(BaseModel):
     """Schema for get_job_run_details() response."""
 
-    run_steps: List[RunStepSchema]
+    run_steps: list[RunStepSchema]
 
     class Config:
         extra = "allow"
@@ -38,9 +38,9 @@ class RunResultSchema(BaseModel):
 class RunResultsArtifactSchema(BaseModel):
     """Schema for get_job_run_artifact() response (run_results.json)."""
 
-    results: List[RunResultSchema]
-    args: Optional[Dict[str, Any]] = None
-    metadata: Optional[Dict[str, Any]] = None
+    results: list[RunResultSchema]
+    args: Optional[dict[str, Any]] = None
+    metadata: Optional[dict[str, Any]] = None
 
     class Config:
         extra = "allow"
@@ -60,4 +60,4 @@ class MultiErrorResultSchema(BaseModel):
     target: Optional[str] = None
     step_name: Optional[str] = None
     finished_at: Optional[str] = None
-    errors: List[ErrorResultSchema]
+    errors: list[ErrorResultSchema]
