@@ -4,6 +4,7 @@ from typing import Any, Optional
 from pydantic import ValidationError
 
 from dbt_mcp.dbt_admin.client import DbtAdminAPIClient
+from dbt_mcp.config.config_providers import AdminApiConfig
 from dbt_mcp.dbt_admin.constants import (
     JobRunStatus,
     STATUS_MAP,
@@ -16,6 +17,7 @@ from dbt_mcp.dbt_admin.run_results_errors.config import (
     MultiErrorResultSchema,
 )
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -27,6 +29,7 @@ class ErrorFetcher:
         run_id: int,
         run_details: dict[str, Any],
         client: DbtAdminAPIClient,
+        admin_api_config: AdminApiConfig,
     ):
         """
         Initialize parser with run data.
@@ -35,12 +38,14 @@ class ErrorFetcher:
             run_id: dbt Cloud job run ID
             run_details: Raw run details from get_job_run_details()
             client: DbtAdminAPIClient instance for fetching artifacts
+            admin_api_config: Admin API configuration
         """
         self.run_id = run_id
         self.run_details = run_details
         self.client = client
+        self.admin_api_config = admin_api_config
 
-    def analyze_run_errors(self) -> dict[str, Any]:
+    async def analyze_run_errors(self) -> dict[str, Any]:
         """
         Parse the run data and return simplified failure details with validation.
 
@@ -55,7 +60,7 @@ class ErrorFetcher:
             if not failed_step:
                 return self._create_error_result("No failed step found")
 
-            result = self._get_failure_details(failed_step)
+            result = await self._get_failure_details(failed_step)
 
             return MultiErrorResultSchema.model_validate(result).model_dump()
 
@@ -78,23 +83,25 @@ class ErrorFetcher:
                 }
         return None
 
-    def _get_failure_details(self, failed_step: dict) -> dict[str, Any]:
+    async def _get_failure_details(self, failed_step: dict) -> dict[str, Any]:
         """Get simplified failure information from failed step."""
-        run_results_content = self._fetch_run_results_artifact(failed_step)
+        run_results_content = await self._fetch_run_results_artifact(failed_step)
 
         if not run_results_content:
             return self._handle_artifact_error(failed_step)
 
         return self._parse_run_results(run_results_content, failed_step)
 
-    def _fetch_run_results_artifact(self, failed_step: dict[str, Any]) -> Optional[str]:
+    async def _fetch_run_results_artifact(
+        self, failed_step: dict[str, Any]
+    ) -> Optional[str]:
         """Fetch run_results.json artifact for the failed step."""
         step_index = failed_step.get("index")
 
         try:
             if step_index is not None:
-                run_results_content = self.client.get_job_run_artifact(
-                    self.client.config.account_id,
+                run_results_content = await self.client.get_job_run_artifact(
+                    self.admin_api_config.account_id,
                     self.run_id,
                     "run_results.json",
                     step=step_index,

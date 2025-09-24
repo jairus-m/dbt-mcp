@@ -126,14 +126,17 @@ def create_admin_api_tool_definitions(
             admin_api_config.account_id, run_id, artifact_path, step
         )
 
-    def get_job_run_error(run_id: int) -> dict[str, Any] | str:
+    async def get_job_run_error(run_id: int) -> dict[str, Any] | str:
         """Get focused error information for a failed job run."""
         try:
-            run_details = admin_client.get_job_run_details(
+            admin_api_config = await admin_api_config_provider.get_config()
+            run_details = await admin_client.get_job_run_details(
                 admin_api_config.account_id, run_id
             )
-            error_fetcher = ErrorFetcher(run_id, run_details, admin_client)
-            return error_fetcher.analyze_run_errors()
+            error_fetcher = ErrorFetcher(
+                run_id, run_details, admin_client, admin_api_config
+            )
+            return await error_fetcher.analyze_run_errors()
 
         except Exception as e:
             logger.error(f"Error getting run error details for {run_id}: {e}")
