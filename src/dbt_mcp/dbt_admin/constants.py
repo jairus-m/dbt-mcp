@@ -12,6 +12,15 @@ class JobRunStatus(str, Enum):
     CANCELLED = "cancelled"
 
 
+class RunResultsStatus(str, Enum):
+    """Enum for run_results.json status values."""
+
+    SUCCESS = "success"
+    ERROR = "error"
+    FAIL = "fail"
+    SKIP = "skip"
+
+
 STATUS_MAP = {
     JobRunStatus.QUEUED: 1,
     JobRunStatus.STARTING: 2,

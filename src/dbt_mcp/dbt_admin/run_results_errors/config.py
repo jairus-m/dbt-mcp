@@ -17,7 +17,9 @@ class RunStepSchema(BaseModel):
 class RunDetailsSchema(BaseModel):
     """Schema for get_job_run_details() response."""
 
+    is_cancelled: bool
     run_steps: list[RunStepSchema]
+    finished_at: Optional[str] = None
 
     class Config:
         extra = "allow"

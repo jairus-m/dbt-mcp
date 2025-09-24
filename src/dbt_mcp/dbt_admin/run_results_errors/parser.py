@@ -7,6 +7,7 @@ from dbt_mcp.dbt_admin.client import DbtAdminAPIClient
 from dbt_mcp.config.config_providers import AdminApiConfig
 from dbt_mcp.dbt_admin.constants import (
     JobRunStatus,
+    RunResultsStatus,
     STATUS_MAP,
     SOURCE_FRESHNESS_STEP_NAME,
 )
@@ -57,6 +58,12 @@ class ErrorFetcher:
 
             failed_step = self._find_failed_step(run_details.model_dump())
 
+            if not failed_step and run_details.is_cancelled:
+                return self._create_error_result(
+                    message="Job run was cancelled: no steps were triggered",
+                    finished_at=run_details.finished_at,
+                )
+
             if not failed_step:
                 return self._create_error_result("No failed step found")
 
@@ -79,6 +86,7 @@ class ErrorFetcher:
                     "name": step.get("name"),
                     "finished_at": step.get("finished_at"),
                     "status_humanized": step.get("status_humanized"),
+                    "status": step.get("status"),
                     "index": step.get("index"),
                 }
         return None
@@ -139,7 +147,10 @@ class ErrorFetcher:
         """Extract error results from run results."""
         errors = []
         for result in results:
-            if result.status in [JobRunStatus.ERROR.value, "fail"]:
+            if result.status in [
+                RunResultsStatus.ERROR.value,
+                RunResultsStatus.FAIL.value,
+            ]:
                 error = ErrorResultSchema(
                     unique_id=result.unique_id,
                     relation_name=result.relation_name,
@@ -163,8 +174,15 @@ class ErrorFetcher:
                 "target": target,
             }
 
+        if (
+            failed_step.get("status") == STATUS_MAP[JobRunStatus.CANCELLED]
+        ):  # Cancelled run with steps triggered
+            message = "Job run was cancelled: run_results.json not available"
+        else:
+            message = "No failures found in run_results"
+
         return self._create_error_result(
-            message="No failures found in run_results",
+            message=message,
             target=target,
             step_name=failed_step["name"],
             finished_at=failed_step["finished_at"],
