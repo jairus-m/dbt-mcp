@@ -65,3 +65,9 @@ class MultiErrorResultSchema(BaseModel):
     step_name: Optional[str] = None
     finished_at: Optional[str] = None
     errors: list[ErrorResultSchema]
+
+
+class MultiStepErrorResultSchema(BaseModel):
+    """Schema for multiple failed steps."""
+
+    failed_steps: list[MultiErrorResultSchema]

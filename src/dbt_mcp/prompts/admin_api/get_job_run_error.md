@@ -8,18 +8,26 @@ This tool retrieves and analyzes job run failures to provide concise, actionable
 
 ## Returns
 
-Structured error information including:
+Structured error information with `failed_steps` containing a list of failed step details:
 
-- errors: List of specific error details with unique_id, relation_name, and error message
-- step_name: The failed step that caused the run to fail
-- finished_at: Timestamp when the failed step completed
-- target: The dbt target environment where the failure occurred
+- failed_steps: List of failed steps, each containing:
+  - target: The dbt target environment where the failure occurred
+  - step_name: The failed step that caused the run to fail
+  - finished_at: Timestamp when the failed step completed
+  - errors: List of specific error details, each with:
+    - unique_id: Model/test unique identifier (nullable)
+    - relation_name: Database relation name or "No database relation"
+    - message: Error message
+    - compiled_code: Raw compiled SQL code (nullable)
 
 ## Error Types Handled
 
-- Model execution errors
-- Test failures
-- Source freshness errors
+- Model execution
+- Data and unit tests
+- Source freshness
+- Snapshot
+- Data constraints / contracts
+- Cancelled runs (with and without executed steps)
 
 ## Use Cases
 
@@ -48,14 +56,19 @@ Structured error information including:
 
 ```json
 {
-  "target": "prod",
-  "step_name": "Invoke dbt with `dbt run --models staging`",
-  "finished_at": "2025-09-17 14:32:15.123456+00:00",
-  "errors": [
+  "failed_steps": [
     {
-      "unique_id": "model.analytics.stg_users",
-      "relation_name": "analytics_staging.stg_users",
-      "message": "Syntax error: Expected end of input but got keyword SELECT at line 15"
+      "target": "prod",
+      "step_name": "Invoke dbt with `dbt run --models staging`",
+      "finished_at": "2025-09-17 14:32:15.123456+00:00",
+      "errors": [
+        {
+          "unique_id": "model.analytics.stg_users",
+          "relation_name": "analytics_staging.stg_users",
+          "message": "Syntax error: Expected end of input but got keyword SELECT at line 15",
+          "compiled_code": "SELECT\n  id,\n  name\nFROM raw_users\nSELECT -- duplicate SELECT causes error"
+        }
+      ]
     }
   ]
 }

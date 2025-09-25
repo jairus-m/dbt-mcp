@@ -18,6 +18,7 @@ from dbt_mcp.dbt_admin.run_results_errors.config import (
     RunResultsArtifactSchema,
     ErrorResultSchema,
     MultiErrorResultSchema,
+    MultiStepErrorResultSchema,
 )
 
 
@@ -36,7 +37,6 @@ class ErrorFetcher:
     ):
         """
         Initialize parser with run data.
-
         Args:
             run_id: dbt Cloud job run ID
             run_details: Raw run details from get_job_run_details()
@@ -49,46 +49,48 @@ class ErrorFetcher:
         self.admin_api_config = admin_api_config
 
     async def analyze_run_errors(self) -> dict[str, Any]:
-        """
-        Parse the run data and return simplified failure details with validation.
-
-        Returns:
-            Structured error information
-        """
+        """Parse the run data and return all failed steps with their details."""
         try:
             run_details = RunDetailsSchema.model_validate(self.run_details)
+            failed_steps = self._find_all_failed_steps(run_details)
 
-            failed_step = self._find_failed_step(run_details)
-
-            if not failed_step and run_details.is_cancelled:
-                result = self._create_error_result(
-                    message="Job run was cancelled: no steps were triggered",
+            if run_details.is_cancelled:
+                error_result = self._create_error_result(
+                    message="Job run was cancelled",
                     finished_at=run_details.finished_at,
                 )
-            elif not failed_step:
-                result = self._create_error_result("No failed step found")
-            else:
-                result = await self._get_failure_details(failed_step)
+                return {"failed_steps": [error_result.model_dump()]}
 
-            return result.model_dump()
+            if not failed_steps:
+                error_result = self._create_error_result("No failed step found")
+                return {"failed_steps": [error_result.model_dump()]}
+
+            processed_steps = []
+            for step in failed_steps:
+                step_result = await self._get_failure_details(step)
+                processed_steps.append(step_result.model_dump())
+
+            result = {"failed_steps": processed_steps}
+            return MultiStepErrorResultSchema.model_validate(result).model_dump()
 
         except ValidationError as e:
             logger.error(f"Schema validation failed for run {self.run_id}: {e}")
-            result = self._create_error_result(f"Validation failed: {str(e)}")
-            return result.model_dump()
+            error_result = self._create_error_result(f"Validation failed: {str(e)}")
+            return {"failed_steps": [error_result.model_dump()]}
         except Exception as e:
             logger.error(f"Error analyzing run {self.run_id}: {e}")
-            result = self._create_error_result(str(e))
-            return result.model_dump()
+            error_result = self._create_error_result(str(e))
+            return {"failed_steps": [error_result.model_dump()]}
 
-    def _find_failed_step(
+    def _find_all_failed_steps(
         self, run_details: RunDetailsSchema
-    ) -> Optional[RunStepSchema]:
-        """Find the first failed step in the run."""
+    ) -> list[RunStepSchema]:
+        """Find all failed steps in the run."""
+        failed_steps = []
         for step in run_details.run_steps:
             if step.status == STATUS_MAP[JobRunStatus.ERROR]:
-                return step
-        return None
+                failed_steps.append(step)
+        return failed_steps
 
     async def _get_failure_details(
         self, failed_step: RunStepSchema
@@ -226,7 +228,7 @@ class ErrorFetcher:
         step_name = failed_step.name
 
         # Special handling for source freshness steps
-        if SOURCE_FRESHNESS_STEP_NAME in step_name.lower():
+        if SOURCE_FRESHNESS_STEP_NAME.lower() in step_name.lower():
             message = "Source freshness error: run_results.json not available"
         else:
             error_detail = str(error) if error else "not available"
