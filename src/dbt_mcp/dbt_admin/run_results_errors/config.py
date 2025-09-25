@@ -32,6 +32,7 @@ class RunResultSchema(BaseModel):
     status: str  # "success", "error", "fail", "skip"
     message: Optional[str] = None
     relation_name: Optional[str] = None
+    compiled_code: Optional[str] = None
 
     class Config:
         extra = "allow"
@@ -54,6 +55,7 @@ class ErrorResultSchema(BaseModel):
     unique_id: Optional[str] = None
     relation_name: Optional[str] = None
     message: str
+    compiled_code: Optional[str] = None
 
 
 class MultiErrorResultSchema(BaseModel):

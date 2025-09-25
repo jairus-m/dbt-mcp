@@ -151,10 +151,16 @@ class ErrorFetcher:
                 RunResultsStatus.ERROR.value,
                 RunResultsStatus.FAIL.value,
             ]:
+                relation_name = (
+                    result.relation_name
+                    if result.relation_name is not None
+                    else "No database relation"
+                )
                 error = ErrorResultSchema(
                     unique_id=result.unique_id,
-                    relation_name=result.relation_name,
+                    relation_name=relation_name,
                     message=result.message or "",
+                    compiled_code=result.compiled_code,
                 )
                 errors.append(error)
         return errors
@@ -196,12 +202,14 @@ class ErrorFetcher:
         target: Optional[str] = None,
         step_name: Optional[str] = None,
         finished_at: Optional[str] = None,
+        compiled_code: Optional[str] = None,
     ) -> dict[str, Any]:
         """Create a standardized error results using MultiErrorResultSchema."""
         error = ErrorResultSchema(
             unique_id=unique_id,
             relation_name=relation_name,
             message=message,
+            compiled_code=compiled_code,
         )
         result = MultiErrorResultSchema(
             errors=[error],
