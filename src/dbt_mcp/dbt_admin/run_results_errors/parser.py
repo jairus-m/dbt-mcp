@@ -180,12 +180,7 @@ class ErrorFetcher:
                 target=target,
             ).model_dump()
 
-        if (
-            failed_step.status == STATUS_MAP[JobRunStatus.CANCELLED]
-        ):  # Cancelled run with steps triggered
-            message = "Job run was cancelled: run_results.json not available"
-        else:
-            message = "No failures found in run_results"
+        message = "No failures found in run_results"
 
         return self._create_error_result(
             message=message,
