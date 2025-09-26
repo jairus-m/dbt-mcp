@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 from pydantic import BaseModel
 
 
@@ -8,7 +8,7 @@ class RunStepSchema(BaseModel):
     name: str
     status: int  # 20 = error
     index: int
-    finished_at: Optional[str] = None
+    finished_at: str | None = None
 
     class Config:
         extra = "allow"
@@ -19,7 +19,7 @@ class RunDetailsSchema(BaseModel):
 
     is_cancelled: bool
     run_steps: list[RunStepSchema]
-    finished_at: Optional[str] = None
+    finished_at: str | None = None
 
     class Config:
         extra = "allow"
@@ -30,9 +30,9 @@ class RunResultSchema(BaseModel):
 
     unique_id: str
     status: str  # "success", "error", "fail", "skip"
-    message: Optional[str] = None
-    relation_name: Optional[str] = None
-    compiled_code: Optional[str] = None
+    message: str | None = None
+    relation_name: str | None = None
+    compiled_code: str | None = None
 
     class Config:
         extra = "allow"
@@ -41,7 +41,7 @@ class RunResultSchema(BaseModel):
 class RunResultsArgsSchema(BaseModel):
     """Schema for args section in run_results.json."""
 
-    target: Optional[str] = None
+    target: str | None = None
 
     class Config:
         extra = "allow"
@@ -51,8 +51,8 @@ class RunResultsArtifactSchema(BaseModel):
     """Schema for get_job_run_artifact() response (run_results.json)."""
 
     results: list[RunResultSchema]
-    args: Optional[RunResultsArgsSchema] = None
-    metadata: Optional[dict[str, Any]] = None
+    args: RunResultsArgsSchema | None = None
+    metadata: dict[str, Any] | None = None
 
     class Config:
         extra = "allow"
@@ -61,16 +61,16 @@ class RunResultsArtifactSchema(BaseModel):
 class ErrorResultSchema(BaseModel):
     """Schema for individual error result."""
 
-    unique_id: Optional[str] = None
-    relation_name: Optional[str] = None
+    unique_id: str | None = None
+    relation_name: str | None = None
     message: str
-    compiled_code: Optional[str] = None
+    compiled_code: str | None = None
 
 
 class ErrorStepSchema(BaseModel):
     """Schema for a single failed step with its errors."""
 
-    target: Optional[str] = None
-    step_name: Optional[str] = None
-    finished_at: Optional[str] = None
+    target: str | None = None
+    step_name: str | None = None
+    finished_at: str | None = None
     errors: list[ErrorResultSchema]

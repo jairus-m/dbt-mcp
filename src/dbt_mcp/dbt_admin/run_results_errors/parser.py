@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Optional
+from typing import Any
 from pydantic import ValidationError
 
 from dbt_mcp.dbt_admin.client import DbtAdminAPIClient
@@ -100,7 +100,7 @@ class ErrorFetcher:
 
     async def _fetch_run_results_artifact(
         self, failed_step: RunStepSchema
-    ) -> Optional[str]:
+    ) -> str | None:
         """Fetch run_results.json artifact for the failed step."""
         step_index = failed_step.index
 
@@ -167,7 +167,7 @@ class ErrorFetcher:
         self,
         errors: list[ErrorResultSchema],
         failed_step: RunStepSchema,
-        args: Optional[Any],
+        args: Any | None,
     ) -> dict[str, Any]:
         """Build the final error response structure."""
         target = args.target if args else None
@@ -197,12 +197,12 @@ class ErrorFetcher:
     def _create_error_result(
         self,
         message: str,
-        unique_id: Optional[str] = None,
-        relation_name: Optional[str] = None,
-        target: Optional[str] = None,
-        step_name: Optional[str] = None,
-        finished_at: Optional[str] = None,
-        compiled_code: Optional[str] = None,
+        unique_id: str | None = None,
+        relation_name: str | None = None,
+        target: str | None = None,
+        step_name: str | None = None,
+        finished_at: str | None = None,
+        compiled_code: str | None = None,
     ) -> dict[str, Any]:
         """Create a standardized error results using ErrorStepSchema."""
         error = ErrorResultSchema(
@@ -219,7 +219,7 @@ class ErrorFetcher:
         ).model_dump()
 
     def _handle_artifact_error(
-        self, failed_step: RunStepSchema, error: Optional[Exception] = None
+        self, failed_step: RunStepSchema, error: Exception | None = None
     ) -> dict[str, Any]:
         """Handle cases where run_results.json is not available."""
         step_name = failed_step.name
