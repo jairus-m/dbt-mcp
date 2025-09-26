@@ -1,4 +1,3 @@
-import json
 import logging
 from typing import Any, Optional
 from pydantic import ValidationError
@@ -17,8 +16,7 @@ from dbt_mcp.dbt_admin.run_results_errors.config import (
     RunResultSchema,
     RunResultsArtifactSchema,
     ErrorResultSchema,
-    MultiErrorResultSchema,
-    MultiStepErrorResultSchema,
+    ErrorStepSchema,
 )
 
 
@@ -59,28 +57,27 @@ class ErrorFetcher:
                     message="Job run was cancelled",
                     finished_at=run_details.finished_at,
                 )
-                return {"failed_steps": [error_result.model_dump()]}
+                return {"failed_steps": [error_result]}
 
             if not failed_steps:
                 error_result = self._create_error_result("No failed step found")
-                return {"failed_steps": [error_result.model_dump()]}
+                return {"failed_steps": [error_result]}
 
             processed_steps = []
             for step in failed_steps:
                 step_result = await self._get_failure_details(step)
-                processed_steps.append(step_result.model_dump())
+                processed_steps.append(step_result)
 
-            result = {"failed_steps": processed_steps}
-            return MultiStepErrorResultSchema.model_validate(result).model_dump()
+            return {"failed_steps": processed_steps}
 
         except ValidationError as e:
             logger.error(f"Schema validation failed for run {self.run_id}: {e}")
             error_result = self._create_error_result(f"Validation failed: {str(e)}")
-            return {"failed_steps": [error_result.model_dump()]}
+            return {"failed_steps": [error_result]}
         except Exception as e:
             logger.error(f"Error analyzing run {self.run_id}: {e}")
             error_result = self._create_error_result(str(e))
-            return {"failed_steps": [error_result.model_dump()]}
+            return {"failed_steps": [error_result]}
 
     def _find_all_failed_steps(
         self, run_details: RunDetailsSchema
@@ -92,9 +89,7 @@ class ErrorFetcher:
                 failed_steps.append(step)
         return failed_steps
 
-    async def _get_failure_details(
-        self, failed_step: RunStepSchema
-    ) -> MultiErrorResultSchema:
+    async def _get_failure_details(self, failed_step: RunStepSchema) -> dict[str, Any]:
         """Get simplified failure information from failed step."""
         run_results_content = await self._fetch_run_results_artifact(failed_step)
 
@@ -128,15 +123,15 @@ class ErrorFetcher:
 
     def _parse_run_results(
         self, run_results_content: str, failed_step: RunStepSchema
-    ) -> MultiErrorResultSchema:
+    ) -> dict[str, Any]:
         """Parse run_results.json content and extract errors."""
         try:
-            run_results_data = json.loads(run_results_content)
-            run_results = RunResultsArtifactSchema.model_validate(run_results_data)
-            target = run_results_data.get("args", {}).get("target")
+            run_results = RunResultsArtifactSchema.model_validate_json(
+                run_results_content
+            )
             errors = self._extract_errors_from_results(run_results.results)
 
-            return self._build_error_response(errors, failed_step, target)
+            return self._build_error_response(errors, failed_step, run_results.args)
 
         except ValidationError as e:
             logger.warning(f"run_results.json validation failed: {e}")
@@ -172,16 +167,18 @@ class ErrorFetcher:
         self,
         errors: list[ErrorResultSchema],
         failed_step: RunStepSchema,
-        target: Optional[str],
-    ) -> MultiErrorResultSchema:
+        args: Optional[Any],
+    ) -> dict[str, Any]:
         """Build the final error response structure."""
+        target = args.target if args else None
+
         if errors:
-            return MultiErrorResultSchema(
+            return ErrorStepSchema(
                 errors=errors,
                 step_name=failed_step.name,
                 finished_at=failed_step.finished_at,
                 target=target,
-            )
+            ).model_dump()
 
         if (
             failed_step.status == STATUS_MAP[JobRunStatus.CANCELLED]
@@ -206,24 +203,24 @@ class ErrorFetcher:
         step_name: Optional[str] = None,
         finished_at: Optional[str] = None,
         compiled_code: Optional[str] = None,
-    ) -> MultiErrorResultSchema:
-        """Create a standardized error results using MultiErrorResultSchema."""
+    ) -> dict[str, Any]:
+        """Create a standardized error results using ErrorStepSchema."""
         error = ErrorResultSchema(
             unique_id=unique_id,
             relation_name=relation_name,
             message=message,
             compiled_code=compiled_code,
         )
-        return MultiErrorResultSchema(
+        return ErrorStepSchema(
             errors=[error],
             step_name=step_name,
             finished_at=finished_at,
             target=target,
-        )
+        ).model_dump()
 
     def _handle_artifact_error(
         self, failed_step: RunStepSchema, error: Optional[Exception] = None
-    ) -> MultiErrorResultSchema:
+    ) -> dict[str, Any]:
         """Handle cases where run_results.json is not available."""
         step_name = failed_step.name
 

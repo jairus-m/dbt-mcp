@@ -38,11 +38,20 @@ class RunResultSchema(BaseModel):
         extra = "allow"
 
 
+class RunResultsArgsSchema(BaseModel):
+    """Schema for args section in run_results.json."""
+
+    target: Optional[str] = None
+
+    class Config:
+        extra = "allow"
+
+
 class RunResultsArtifactSchema(BaseModel):
     """Schema for get_job_run_artifact() response (run_results.json)."""
 
     results: list[RunResultSchema]
-    args: Optional[dict[str, Any]] = None
+    args: Optional[RunResultsArgsSchema] = None
     metadata: Optional[dict[str, Any]] = None
 
     class Config:
@@ -58,16 +67,10 @@ class ErrorResultSchema(BaseModel):
     compiled_code: Optional[str] = None
 
 
-class MultiErrorResultSchema(BaseModel):
-    """Schema for multiple errors results."""
+class ErrorStepSchema(BaseModel):
+    """Schema for a single failed step with its errors."""
 
     target: Optional[str] = None
     step_name: Optional[str] = None
     finished_at: Optional[str] = None
     errors: list[ErrorResultSchema]
-
-
-class MultiStepErrorResultSchema(BaseModel):
-    """Schema for multiple failed steps."""
-
-    failed_steps: list[MultiErrorResultSchema]
