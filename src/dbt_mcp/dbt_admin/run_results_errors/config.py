@@ -9,6 +9,8 @@ class RunStepSchema(BaseModel):
     status: int  # 20 = error
     index: int
     finished_at: str | None = None
+    logs: str | None = None
+    truncated_debug_logs: str | None = None
 
     class Config:
         extra = "allow"
@@ -65,6 +67,7 @@ class ErrorResultSchema(BaseModel):
     relation_name: str | None = None
     message: str
     compiled_code: str | None = None
+    truncated_logs: str | None = None
 
 
 class ErrorStepSchema(BaseModel):

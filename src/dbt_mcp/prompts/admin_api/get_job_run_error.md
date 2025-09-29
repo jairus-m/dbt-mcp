@@ -19,6 +19,9 @@ Structured error information with `failed_steps` containing a list of failed ste
     - relation_name: Database relation name or "No database relation"
     - message: Error message
     - compiled_code: Raw compiled SQL code (nullable)
+    - truncated_logs: Raw truncated debug log output (nullable)
+
+NOTE: The "truncated_logs" key only populates if there is no `run_results.json` artifact to parse after a job run error.
 
 ## Error Types Handled
 
@@ -39,10 +42,9 @@ Structured error information with `failed_steps` containing a list of failed ste
 
 ## Advantages over get_job_run_details
 
-- Reduced token usage
-- Structured format
-- Smart filtering
-- Source freshness handling
+- Reduced token usage by filreting for relevant error information
+- Returns errors in a structured format
+- Handles source freshness errors in addition to model/test errors
 
 ## Example Usage
 
@@ -66,7 +68,8 @@ Structured error information with `failed_steps` containing a list of failed ste
           "unique_id": "model.analytics.stg_users",
           "relation_name": "analytics_staging.stg_users",
           "message": "Syntax error: Expected end of input but got keyword SELECT at line 15",
-          "compiled_code": "SELECT\n  id,\n  name\nFROM raw_users\nSELECT -- duplicate SELECT causes error"
+          "compiled_code": "SELECT\n  id,\n  name\nFROM raw_users\nSELECT -- duplicate SELECT causes error",
+          "truncated_logs": null
         }
       ]
     }

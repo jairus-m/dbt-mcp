@@ -198,6 +198,7 @@ class ErrorFetcher:
         step_name: str | None = None,
         finished_at: str | None = None,
         compiled_code: str | None = None,
+        truncated_logs: str | None = None,
     ) -> dict[str, Any]:
         """Create a standardized error results using ErrorStepSchema."""
         error = ErrorResultSchema(
@@ -205,6 +206,7 @@ class ErrorFetcher:
             relation_name=relation_name,
             message=message,
             compiled_code=compiled_code,
+            truncated_logs=truncated_logs,
         )
         return ErrorStepSchema(
             errors=[error],
@@ -217,17 +219,20 @@ class ErrorFetcher:
         self, failed_step: RunStepSchema, error: Exception | None = None
     ) -> dict[str, Any]:
         """Handle cases where run_results.json is not available."""
+        relation_name = "No database relation"
         step_name = failed_step.name
+        truncated_logs = failed_step.truncated_debug_logs
 
         # Special handling for source freshness steps
         if SOURCE_FRESHNESS_STEP_NAME.lower() in step_name.lower():
-            message = "Source freshness error: run_results.json not available"
+            message = "Source freshness error - returning logs"
         else:
-            error_detail = str(error) if error else "not available"
-            message = f"run_results.json not available: {error_detail}"
+            message = "run_results.json not available - returning logs"
 
         return self._create_error_result(
             message=message,
+            relation_name=relation_name,
             step_name=failed_step.name,
             finished_at=failed_step.finished_at,
+            truncated_logs=truncated_logs,
         )
