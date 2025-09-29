@@ -50,6 +50,7 @@ class ToolName(Enum):
     RETRY_JOB_RUN = "retry_job_run"
     LIST_JOB_RUN_ARTIFACTS = "list_job_run_artifacts"
     GET_JOB_RUN_ARTIFACT = "get_job_run_artifact"
+    GET_JOB_RUN_ERROR = "get_job_run_error"
 
     @classmethod
     def get_all_tool_names(cls) -> set[str]:

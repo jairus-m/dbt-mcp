@@ -103,11 +103,11 @@ async def test_register_admin_api_tools_all_tools(
 
     register_admin_api_tools(fastmcp, mock_config.admin_api_config_provider, [])
 
-    # Should call register_tools with 9 tool definitions
+    # Should call register_tools with 10 tool definitions
     mock_register_tools.assert_called_once()
     args, kwargs = mock_register_tools.call_args
     tool_definitions = args[1]  # Second argument is the tool definitions list
-    assert len(tool_definitions) == 9
+    assert len(tool_definitions) == 10
 
 
 @patch("dbt_mcp.dbt_admin.tools.register_tools")
@@ -123,13 +123,13 @@ async def test_register_admin_api_tools_with_disabled_tools(
         fastmcp, mock_config.admin_api_config_provider, disable_tools
     )
 
-    # Should still call register_tools with all 9 tool definitions
+    # Should still call register_tools with all 10 tool definitions
     # The exclude_tools parameter is passed to register_tools to handle filtering
     mock_register_tools.assert_called_once()
     args, kwargs = mock_register_tools.call_args
     tool_definitions = args[1]  # Second argument is the tool definitions list
     exclude_tools_arg = args[2]  # Third argument is exclude_tools
-    assert len(tool_definitions) == 9
+    assert len(tool_definitions) == 10
     assert exclude_tools_arg == disable_tools
 
 
