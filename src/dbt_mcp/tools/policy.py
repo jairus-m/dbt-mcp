@@ -129,4 +129,14 @@ tool_policies = {
     ToolName.GET_JOB_RUN_ARTIFACT.value: ToolPolicy(
         name=ToolName.GET_JOB_RUN_ARTIFACT.value, behavior=ToolBehavior.METADATA
     ),
+    # dbt-codegen tools
+    ToolName.GENERATE_SOURCE.value: ToolPolicy(
+        name=ToolName.GENERATE_SOURCE.value, behavior=ToolBehavior.METADATA
+    ),
+    ToolName.GENERATE_MODEL_YAML.value: ToolPolicy(
+        name=ToolName.GENERATE_MODEL_YAML.value, behavior=ToolBehavior.METADATA
+    ),
+    ToolName.GENERATE_STAGING_MODEL.value: ToolPolicy(
+        name=ToolName.GENERATE_STAGING_MODEL.value, behavior=ToolBehavior.METADATA
+    ),
 }
