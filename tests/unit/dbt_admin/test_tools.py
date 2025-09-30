@@ -1,4 +1,4 @@
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, AsyncMock
 
 import pytest
 
@@ -69,6 +69,16 @@ def mock_admin_client():
             "id": 100,
             "status": 10,
             "status_humanized": "Success",
+            "is_cancelled": False,
+            "run_steps": [
+                {
+                    "index": 1,
+                    "name": "Invoke dbt with `dbt build`",
+                    "status": 20,
+                    "status_humanized": "Error",
+                    "logs_url": "https://example.com/logs",
+                }
+            ],
         }
     )
     client.cancel_job_run = AsyncMock(
@@ -372,3 +382,56 @@ async def test_trigger_job_run_with_all_optional_params(
         git_sha="abc123",
         schema_override="custom_schema",
     )
+
+
+@patch("dbt_mcp.dbt_admin.tools.get_prompt")
+@patch("dbt_mcp.dbt_admin.tools.ErrorFetcher")
+async def test_get_job_run_error_tool(
+    mock_error_fetcher_class, mock_get_prompt, mock_admin_client
+):
+    mock_get_prompt.return_value = "Get run error prompt"
+
+    # Mock the ErrorFetcher instance and its analyze_run_errors method
+    # Not part of client mock, so we create a separate mock
+    mock_error_fetcher_instance = Mock()
+    mock_error_fetcher_instance.analyze_run_errors = AsyncMock(
+        return_value={
+            "failed_steps": [
+                {
+                    "step_name": "Invoke dbt with `dbt build`",
+                    "target": "prod",
+                    "finished_at": "2024-01-01T10:00:00Z",
+                    "errors": [
+                        {
+                            "unique_id": "model.analytics.user_sessions",
+                            "message": "Database Error in model user_sessions...",
+                            "relation_name": "prod.analytics.user_sessions",
+                            "compiled_code": "SELECT * FROM raw.sessions",
+                            "truncated_logs": None,
+                        }
+                    ],
+                }
+            ]
+        }
+    )
+    mock_error_fetcher_class.return_value = mock_error_fetcher_instance
+
+    tool_definitions = create_admin_api_tool_definitions(
+        mock_admin_client, mock_config.admin_api_config_provider
+    )
+    get_job_run_error_tool = tool_definitions[9].fn  # Tenth tool is get_job_run_error
+
+    result = await get_job_run_error_tool(run_id=100)
+
+    assert isinstance(result, dict)
+    assert "failed_steps" in result
+    assert len(result["failed_steps"]) == 1
+
+    step = result["failed_steps"][0]
+    assert step["step_name"] == "Invoke dbt with `dbt build`"
+    assert step["target"] == "prod"
+    assert len(step["errors"]) == 1
+    assert step["errors"][0]["message"] == "Database Error in model user_sessions..."
+
+    mock_error_fetcher_class.assert_called_once()
+    mock_error_fetcher_instance.analyze_run_errors.assert_called_once()
