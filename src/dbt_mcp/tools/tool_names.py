@@ -52,6 +52,11 @@ class ToolName(Enum):
     GET_JOB_RUN_ARTIFACT = "get_job_run_artifact"
     GET_JOB_RUN_ERROR = "get_job_run_error"
 
+    # dbt-codegen tools
+    GENERATE_SOURCE = "generate_source"
+    GENERATE_MODEL_YAML = "generate_model_yaml"
+    GENERATE_STAGING_MODEL = "generate_staging_model"
+
     @classmethod
     def get_all_tool_names(cls) -> set[str]:
         """Returns a set of all tool names as strings."""
