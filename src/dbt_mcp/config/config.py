@@ -119,7 +119,7 @@ def load_config() -> Config:
     user_dir = get_dbt_profiles_path(settings.dbt_profiles_dir)
     user_yaml = try_read_yaml(user_dir / ".user.yml")
     if user_yaml:
-        local_user_id = user_yaml.get("id")
+        local_user_id = user_yaml if isinstance(user_yaml, str) else user_yaml.get("id")
 
     return Config(
         tracking_config=TrackingConfig(

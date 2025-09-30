@@ -1,0 +1,3 @@
+kind: Bug Fix
+body: Fix .user.yml "id" parsing to handle both string and dict formats
+time: 2025-09-29T22:16:53.566697-07:00
