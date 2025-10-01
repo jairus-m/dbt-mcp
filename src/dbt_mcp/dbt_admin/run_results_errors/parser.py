@@ -221,7 +221,14 @@ class ErrorFetcher:
         """Handle cases where run_results.json is not available."""
         relation_name = "No database relation"
         step_name = failed_step.name
-        truncated_logs = failed_step.truncated_debug_logs
+
+        TRUNCATED_LOGS_LENGTH = 50
+        split_logs = failed_step.logs.splitlines() if failed_step.logs else []
+        if len(split_logs) > TRUNCATED_LOGS_LENGTH:
+            split_logs = [
+                "Logs truncated to last {TRUNCATED_LOGS_LENGTH} lines..."
+            ] + split_logs[-TRUNCATED_LOGS_LENGTH:]
+        truncated_logs = "\n".join(split_logs)
 
         # Special handling for source freshness steps
         if SOURCE_FRESHNESS_STEP_NAME.lower() in step_name.lower():
