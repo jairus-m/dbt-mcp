@@ -324,7 +324,6 @@ async def test_get_job_run_details(mock_request, client):
                 {
                     "id": 1,
                     "name": "dbt run",
-                    "truncated_debug_logs": "truncated log data",
                     "logs": "log data",
                 }
             ],
