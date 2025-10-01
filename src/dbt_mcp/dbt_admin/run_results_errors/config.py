@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 
 class RunStepSchema(BaseModel):
-    """Schema for individual run step from get_job_run_details()."""
+    """Schema for individual "run_step" key from get_job_run_details()."""
 
     name: str
     status: int  # 20 = error
@@ -28,7 +28,7 @@ class RunDetailsSchema(BaseModel):
 
 
 class RunResultSchema(BaseModel):
-    """Schema for individual result in run_results.json."""
+    """Schema for individual result in "results" key of run_results.json."""
 
     unique_id: str
     status: str  # "success", "error", "fail", "skip"
@@ -41,7 +41,7 @@ class RunResultSchema(BaseModel):
 
 
 class RunResultsArgsSchema(BaseModel):
-    """Schema for args section in run_results.json."""
+    """Schema for "args" key in run_results.json."""
 
     target: str | None = None
 
