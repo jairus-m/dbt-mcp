@@ -10,7 +10,6 @@ class RunStepSchema(BaseModel):
     index: int
     finished_at: str | None = None
     logs: str | None = None
-    truncated_debug_logs: str | None = None
 
     class Config:
         extra = "allow"

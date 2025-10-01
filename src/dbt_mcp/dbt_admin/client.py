@@ -191,8 +191,8 @@ class DbtAdminAPIClient:
         # we remove the truncated debug logs and logs (conditionally), they are not very relevant
         for step in data.get("run_steps", []):
             if not include_logs:
-                step.pop("truncated_debug_logs", None)
                 step.pop("logs", None)
+            step.pop("truncated_debug_logs", None)
 
         return data
 

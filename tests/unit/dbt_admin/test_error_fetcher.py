@@ -59,7 +59,6 @@ def mock_client():
                         "name": "Source freshness",
                         "status": 20,
                         "finished_at": "2024-01-01T09:30:00Z",
-                        "truncated_debug_logs": "Source freshness check failed for sources: raw_customers, raw_orders",
                     },
                     {
                         "index": 2,
@@ -139,7 +138,7 @@ async def test_schema_validation_failure(mock_client, admin_config):
                 "name": "Invoke dbt with `dbt build`",
                 "status": 20,
                 "finished_at": "2024-01-01T11:00:00Z",
-                "truncated_debug_logs": "Model compilation failed due to missing table",
+                "logs": "Model compilation failed due to missing table",
             }
         ],
     }
