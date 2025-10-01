@@ -131,7 +131,7 @@ def create_admin_api_tool_definitions(
         try:
             admin_api_config = await admin_api_config_provider.get_config()
             run_details = await admin_client.get_job_run_details(
-                admin_api_config.account_id, run_id
+                admin_api_config.account_id, run_id, include_logs=True
             )
             error_fetcher = ErrorFetcher(
                 run_id, run_details, admin_client, admin_api_config
