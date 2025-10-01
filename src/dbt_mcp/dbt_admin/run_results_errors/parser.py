@@ -183,7 +183,7 @@ class ErrorFetcher:
                 target=target,
             ).model_dump()
 
-        message = "No failures found in run_results"
+        message = "No failures found in run_results.json"
 
         return self._create_error_result(
             message=message,
