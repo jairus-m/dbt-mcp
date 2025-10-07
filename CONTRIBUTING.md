@@ -76,7 +76,32 @@ Every PR requires a changelog entry. [Install changie](https://changie.dev/) and
 
 ## Debugging
 
-If you encounter any problems. You can try running `task run` to see errors in your terminal.
+The dbt-mcp server runs with `stdio` transport by default which does not allow for Python debugger support. For debugging with breakpoints, use `streamable-http` transport.
+
+### Option 1: MCP Inspector Only (No Breakpoints)
+1. Run `task inspector` - this starts both the server and inspector automatically
+2. Open MCP Inspector UI
+3. Use "STDIO" Transport Type to connect
+4. Test tools interactively in the inspector UI (uses `stdio` transport, no debugger support)
+
+### Option 2: VS Code Debugger with Breakpoints (Recommended for Debugging)
+1. Set breakpoints in your code
+2. Press `F5` or select "debug dbt-mcp" from the Run menu
+3. Open MCP Inspector UI via `npx @modelcontextprotocol/inspector`
+4. Connect to `http://localhost:8000/mcp/v1` using "Streamable HTTP" transport and "Via Proxy" connection type
+5. Call tools from Inspector - your breakpoints will trigger
+
+### Option 3: Manual Debugging with `task dev`
+1. Run `task dev` - this starts the server with `streamable-http` transport on `http://localhost:8000`
+2. Set breakpoints in your code
+3. Attach your debugger manually (see [debugpy documentation](https://github.com/microsoft/debugpy#debugpy) for examples)
+4. Open MCP Inspector via `npx @modelcontextprotocol/inspector`
+5. Connect to `http://localhost:8000/mcp/v1` using "Streamable HTTP" transport and "Via Proxy" connection type
+6. Call tools from Inspector - your breakpoints will trigger
+
+**Note:** `task dev` uses `streamable-http` by default. The `streamable-http` transport allows the debugger and MCP Inspector to work simultaneously without conflicts. To override, use `MCP_TRANSPORT=stdio task dev`.
+
+If you encounter any problems, you can try running `task run` to see errors in your terminal.
 
 ## Release
 
