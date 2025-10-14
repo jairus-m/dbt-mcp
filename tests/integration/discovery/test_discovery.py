@@ -329,7 +329,6 @@ async def test_get_all_sources_tool():
     """Test the get_all_sources tool function integration."""
     from dbt_mcp.config.config_providers import DefaultDiscoveryConfigProvider
     from dbt_mcp.config.settings import CredentialsProvider, DbtMcpSettings
-    from dbt_mcp.discovery.client import MetadataAPIClient, SourcesFetcher
     from dbt_mcp.discovery.tools import create_discovery_tool_definitions
     
     # Set up environment variables needed by DbtMcpSettings

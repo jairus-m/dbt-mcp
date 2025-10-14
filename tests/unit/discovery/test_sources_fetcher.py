@@ -33,7 +33,7 @@ async def test_fetch_sources_single_page(sources_fetcher, mock_api_client):
             "environment": {
                 "applied": {
                     "sources": {
-                        "pageInfo": {"hasNextPage": false, "endCursor": "cursor_end"},
+                        "pageInfo": {"hasNextPage": False, "endCursor": "cursor_end"},
                         "edges": [
                             {
                                 "node": {
@@ -109,7 +109,7 @@ async def test_fetch_sources_with_filter(sources_fetcher, mock_api_client):
             "environment": {
                 "applied": {
                     "sources": {
-                        "pageInfo": {"hasNextPage": false, "endCursor": "cursor_end"},
+                        "pageInfo": {"hasNextPage": False, "endCursor": "cursor_end"},
                         "edges": [
                             {
                                 "node": {
@@ -154,7 +154,7 @@ async def test_fetch_sources_empty_response(sources_fetcher, mock_api_client):
             "environment": {
                 "applied": {
                     "sources": {
-                        "pageInfo": {"hasNextPage": false, "endCursor": None},
+                        "pageInfo": {"hasNextPage": False, "endCursor": None},
                         "edges": []
                     }
                 }
@@ -176,7 +176,7 @@ async def test_fetch_sources_pagination(sources_fetcher, mock_api_client):
             "environment": {
                 "applied": {
                     "sources": {
-                        "pageInfo": {"hasNextPage": true, "endCursor": "cursor_page_1"},
+                        "pageInfo": {"hasNextPage": True, "endCursor": "cursor_page_1"},
                         "edges": [
                             {
                                 "node": {
@@ -205,7 +205,7 @@ async def test_fetch_sources_pagination(sources_fetcher, mock_api_client):
             "environment": {
                 "applied": {
                     "sources": {
-                        "pageInfo": {"hasNextPage": false, "endCursor": "cursor_page_1"},  # hasNextPage false stops pagination
+                        "pageInfo": {"hasNextPage": False, "endCursor": "cursor_page_1"},  # hasNextPage False stops pagination
                         "edges": [
                             {
                                 "node": {
@@ -249,7 +249,7 @@ async def test_fetch_sources_graphql_error_handling(mock_raise_gql_error, source
             "environment": {
                 "applied": {
                     "sources": {
-                        "pageInfo": {"hasNextPage": false, "endCursor": None},
+                        "pageInfo": {"hasNextPage": False, "endCursor": None},
                         "edges": []
                     }
                 }
@@ -276,7 +276,7 @@ async def test_fetch_sources_with_unique_ids_filter(sources_fetcher, mock_api_cl
             "environment": {
                 "applied": {
                     "sources": {
-                        "pageInfo": {"hasNextPage": false, "endCursor": "cursor_end"},
+                        "pageInfo": {"hasNextPage": False, "endCursor": "cursor_end"},
                         "edges": [
                             {
                                 "node": {
@@ -321,7 +321,7 @@ async def test_fetch_sources_with_tags_filter(sources_fetcher, mock_api_client):
             "environment": {
                 "applied": {
                     "sources": {
-                        "pageInfo": {"hasNextPage": false, "endCursor": "cursor_end"},
+                        "pageInfo": {"hasNextPage": False, "endCursor": "cursor_end"},
                         "edges": [
                             {
                                 "node": {
@@ -366,7 +366,7 @@ async def test_fetch_sources_with_combined_filters(sources_fetcher, mock_api_cli
             "environment": {
                 "applied": {
                     "sources": {
-                        "pageInfo": {"hasNextPage": false, "endCursor": "cursor_end"},
+                        "pageInfo": {"hasNextPage": False, "endCursor": "cursor_end"},
                         "edges": [
                             {
                                 "node": {
@@ -416,7 +416,7 @@ async def test_fetch_sources_with_new_schema_filters(sources_fetcher, mock_api_c
             "environment": {
                 "applied": {
                     "sources": {
-                        "pageInfo": {"hasNextPage": false, "endCursor": "cursor_end"},
+                        "pageInfo": {"hasNextPage": False, "endCursor": "cursor_end"},
                         "edges": [
                             {
                                 "node": {
