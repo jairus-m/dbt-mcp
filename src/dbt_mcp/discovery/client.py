@@ -280,6 +280,7 @@ class GraphQLQueries:
                 applied {
                     sources(filter: $sourcesFilter, after: $after, first: $first, sort: $sort) {
                         pageInfo {
+                            hasNextPage
                             endCursor
                         }
                         edges {
@@ -377,7 +378,12 @@ class ModelFilter(TypedDict, total=False):
 
 
 class SourceFilter(TypedDict, total=False):
-    sourceName: str | None
+    sourceNames: list[str] | None        # Filter by source names
+    uniqueIds: list[str] | None          # Filter by specific source table IDs
+    database: str | None                 # Filter by database
+    schema: str | None                   # Filter by schema
+    freshnessStatus: str | None          # Filter by freshness: "pass", "warn", "error"
+    tags: list[str] | None               # Filter by tags
 
 
 class ModelsFetcher:
@@ -644,6 +650,7 @@ class SourcesFetcher:
         has_next_page = True
         after_cursor: str = ""
         all_edges: list[dict] = []
+            
         while has_next_page and len(all_edges) < MAX_NUM_MODELS:  # Reuse MAX_NUM_MODELS limit
             variables = {
                 "environmentId": await self.get_environment_id(),
@@ -659,11 +666,10 @@ class SourcesFetcher:
             )
             all_edges.extend(self._parse_response_to_json(result))
 
-            previous_after_cursor = after_cursor
-            after_cursor = result["data"]["environment"]["applied"]["sources"][
+            page_info = result["data"]["environment"]["applied"]["sources"][
                 "pageInfo"
-            ]["endCursor"]
-            if previous_after_cursor == after_cursor:
-                has_next_page = False
+            ]
+            has_next_page = page_info.get("hasNextPage", False)
+            after_cursor = page_info.get("endCursor")
 
         return all_edges

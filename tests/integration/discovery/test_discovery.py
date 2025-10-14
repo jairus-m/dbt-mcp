@@ -313,7 +313,7 @@ async def test_fetch_sources_with_filter(sources_fetcher: SourcesFetcher):
         
         # Test filtering by source name
         filtered_results = await sources_fetcher.fetch_sources(
-            source_filter={"sourceName": source_name}
+            source_filter={"sourceNames": [source_name]}
         )
         
         # Validate filtered results

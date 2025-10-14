@@ -62,8 +62,8 @@ def create_discovery_tool_definitions(
     ) -> list[dict]:
         return await exposures_fetcher.fetch_exposure_details(exposure_name, unique_ids)
 
-    async def get_all_sources() -> list[dict]:
-        return await sources_fetcher.fetch_sources()
+    async def get_all_sources(source_filter: dict | None = None) -> list[dict]:
+        return await sources_fetcher.fetch_sources(source_filter)
 
     return [
         ToolDefinition(
