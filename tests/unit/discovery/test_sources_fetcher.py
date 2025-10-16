@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from dbt_mcp.discovery.client import SourcesFetcher, MetadataAPIClient
+from dbt_mcp.errors import GraphQLError
 
 
 @pytest.fixture
@@ -236,6 +237,16 @@ async def test_fetch_sources_pagination(sources_fetcher, mock_api_client):
     # Should have called twice due to pagination
     assert mock_api_client.execute_query.call_count == 2
     
+    # Check that the second call includes the cursor from the first response
+    first_call_args = mock_api_client.execute_query.call_args_list[0]
+    second_call_args = mock_api_client.execute_query.call_args_list[1]
+    
+    # First call should have empty after cursor
+    assert first_call_args[0][1]["after"] == ""
+    
+    # Second call should have the cursor from first response
+    assert second_call_args[0][1]["after"] == "cursor_page_1"
+    
     # Should have both results
     assert len(result) == 2
     assert result[0]["name"] == "customers"
@@ -257,9 +268,14 @@ async def test_fetch_sources_graphql_error_handling(mock_raise_gql_error, source
         }
     }
 
+    # Configure the mock to raise GraphQLError when called
+    mock_raise_gql_error.side_effect = GraphQLError("Test GraphQL error")
+    
     mock_api_client.execute_query.return_value = mock_response
 
-    await sources_fetcher.fetch_sources()
+    # Verify that fetch_sources raises GraphQLError
+    with pytest.raises(GraphQLError, match="Test GraphQL error"):
+        await sources_fetcher.fetch_sources()
 
     # Verify that error handling function was called
     mock_raise_gql_error.assert_called_with(mock_response)

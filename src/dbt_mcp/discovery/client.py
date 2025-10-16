@@ -656,9 +656,7 @@ class SourcesFetcher:
                 "environmentId": await self.get_environment_id(),
                 "after": after_cursor,
                 "first": PAGE_SIZE,
-                "sourcesFilter": source_filter or {},
-                # Note: sort parameter commented out - may not be available for sources
-                # "sort": {"field": "name", "direction": "asc"},
+                "sourcesFilter": source_filter or {}
             }
 
             result = await self.api_client.execute_query(
