@@ -7,12 +7,7 @@ from dbt_mcp.config.config_providers import (
     ConfigProvider,
     DiscoveryConfig,
 )
-from dbt_mcp.discovery.client import (
-    ExposuresFetcher,
-    MetadataAPIClient,
-    ModelsFetcher,
-    SourcesFetcher,
-)
+from dbt_mcp.discovery.client import ExposuresFetcher, MetadataAPIClient, ModelsFetcher, SourcesFetcher  
 from dbt_mcp.prompts.prompts import get_prompt
 from dbt_mcp.tools.annotations import create_tool_annotations
 from dbt_mcp.tools.definitions import ToolDefinition
