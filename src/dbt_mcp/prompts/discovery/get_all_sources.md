@@ -1,12 +1,12 @@
 Get the name, description, and metadata of all dbt sources in the environment. Sources represent external data tables that your dbt models build upon.
 
-Supports filtering by:
-- sourceNames: Filter by specific source names (e.g., ['raw_data', 'external_api'])
-- uniqueIds: Filter by specific source table IDs
-- database: Filter by database name
-- schema: Filter by schema name
-- freshnessStatus: Filter by freshness status ('pass', 'warn', 'error')
-- tags: Filter by source tags
+Parameters (all optional):
+- source_names: List of specific source names to filter by (e.g., ['raw_data', 'external_api'])
+- unique_ids: List of specific source table IDs to filter by
+- database: Database name to filter by
+- schema: Schema name to filter by
+- freshness_status: Freshness status to filter by ('pass', 'warn', or 'error')
+- tags: List of source tags to filter by
 
 Returns information including:
 - name: The table name within the source

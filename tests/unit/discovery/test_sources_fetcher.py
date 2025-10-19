@@ -104,7 +104,22 @@ async def test_fetch_sources_single_page(sources_fetcher, mock_api_client):
     assert result[1]["freshness"]["freshnessStatus"] == "warn"
 
 
-async def test_fetch_sources_with_filter(sources_fetcher, mock_api_client):
+@pytest.mark.parametrize("filter_params,expected_filter", [
+    # Single filter parameters
+    ({"source_names": ["external_api"]}, {"sourceNames": ["external_api"]}),
+    ({"unique_ids": ["source.test_project.raw_data.customers"]}, {"uniqueIds": ["source.test_project.raw_data.customers"]}),
+    ({"database": "analytics"}, {"database": "analytics"}),
+    ({"schema": "prod"}, {"schema": "prod"}),
+    ({"freshness_status": "pass"}, {"freshnessStatus": "pass"}),
+    ({"tags": ["analytics", "daily"]}, {"tags": ["analytics", "daily"]}),
+    # Combined filters
+    (
+        {"source_names": ["core"], "database": "production", "freshness_status": "pass", "tags": ["core"]},
+        {"sourceNames": ["core"], "database": "production", "freshnessStatus": "pass", "tags": ["core"]}
+    ),
+])
+async def test_fetch_sources_with_filters(sources_fetcher, mock_api_client, filter_params, expected_filter):
+    """Test that various filter parameters are correctly converted to GraphQL filter format."""
     mock_response = {
         "data": {
             "environment": {
@@ -135,18 +150,17 @@ async def test_fetch_sources_with_filter(sources_fetcher, mock_api_client):
 
     mock_api_client.execute_query.return_value = mock_response
 
-    # Execute with filter
-    source_filter = {"sourceNames": ["external_api"]}
-    result = await sources_fetcher.fetch_sources(source_filter=source_filter)
+    # Execute with filters
+    result = await sources_fetcher.fetch_sources(**filter_params)
 
-    # Verify the filter was passed correctly
+    # Verify the filter was passed correctly to the GraphQL query
     call_args = mock_api_client.execute_query.call_args
     variables = call_args[0][1]
-    assert variables["sourcesFilter"] == source_filter
+    assert variables["sourcesFilter"] == expected_filter
 
-    # Verify the result
+    # Verify the result structure
+    assert isinstance(result, list)
     assert len(result) == 1
-    assert result[0]["sourceName"] == "external_api"
 
 
 async def test_fetch_sources_empty_response(sources_fetcher, mock_api_client):
@@ -284,193 +298,3 @@ async def test_fetch_sources_graphql_error_handling(mock_raise_gql_error, source
 async def test_get_environment_id(sources_fetcher):
     environment_id = await sources_fetcher.get_environment_id()
     assert environment_id == 123
-
-
-async def test_fetch_sources_with_unique_ids_filter(sources_fetcher, mock_api_client):
-    mock_response = {
-        "data": {
-            "environment": {
-                "applied": {
-                    "sources": {
-                        "pageInfo": {"hasNextPage": False, "endCursor": "cursor_end"},
-                        "edges": [
-                            {
-                                "node": {
-                                    "name": "customers",
-                                    "uniqueId": "source.test_project.raw_data.customers",
-                                    "description": "Customer data",
-                                    "sourceName": "raw_data",
-                                    "resourceType": "source",
-                                    "freshness": {
-                                        "maxLoadedAt": "2024-01-15T10:30:00Z",
-                                        "maxLoadedAtTimeAgoInS": 3600,
-                                        "freshnessStatus": "pass"
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-            }
-        }
-    }
-
-    mock_api_client.execute_query.return_value = mock_response
-
-    # Execute with uniqueIds filter
-    source_filter = {"uniqueIds": ["source.test_project.raw_data.customers"]}
-    result = await sources_fetcher.fetch_sources(source_filter=source_filter)
-
-    # Verify the filter was passed correctly
-    call_args = mock_api_client.execute_query.call_args
-    variables = call_args[0][1]
-    assert variables["sourcesFilter"] == source_filter
-
-    # Verify the result
-    assert len(result) == 1
-    assert result[0]["uniqueId"] == "source.test_project.raw_data.customers"
-
-
-async def test_fetch_sources_with_tags_filter(sources_fetcher, mock_api_client):
-    mock_response = {
-        "data": {
-            "environment": {
-                "applied": {
-                    "sources": {
-                        "pageInfo": {"hasNextPage": False, "endCursor": "cursor_end"},
-                        "edges": [
-                            {
-                                "node": {
-                                    "name": "events",
-                                    "uniqueId": "source.test_project.analytics.events",
-                                    "description": "Analytics events data",
-                                    "sourceName": "analytics",
-                                    "resourceType": "source",
-                                    "freshness": {
-                                        "maxLoadedAt": "2024-01-15T09:00:00Z",
-                                        "maxLoadedAtTimeAgoInS": 7200,
-                                        "freshnessStatus": "warn"
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-            }
-        }
-    }
-
-    mock_api_client.execute_query.return_value = mock_response
-
-    # Execute with tags filter
-    source_filter = {"tags": ["analytics", "daily"]}
-    result = await sources_fetcher.fetch_sources(source_filter=source_filter)
-
-    # Verify the filter was passed correctly
-    call_args = mock_api_client.execute_query.call_args
-    variables = call_args[0][1]
-    assert variables["sourcesFilter"] == source_filter
-
-    # Verify the result
-    assert len(result) == 1
-    assert result[0]["sourceName"] == "analytics"
-
-
-async def test_fetch_sources_with_combined_filters(sources_fetcher, mock_api_client):
-    mock_response = {
-        "data": {
-            "environment": {
-                "applied": {
-                    "sources": {
-                        "pageInfo": {"hasNextPage": False, "endCursor": "cursor_end"},
-                        "edges": [
-                            {
-                                "node": {
-                                    "name": "customers",
-                                    "uniqueId": "source.test_project.core.customers",
-                                    "description": "Core customer data with freshness check",
-                                    "sourceName": "core",
-                                    "resourceType": "source",
-                                    "freshness": {
-                                        "maxLoadedAt": "2024-01-15T12:00:00Z",
-                                        "maxLoadedAtTimeAgoInS": 600,
-                                        "freshnessStatus": "pass"
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-            }
-        }
-    }
-
-    mock_api_client.execute_query.return_value = mock_response
-
-    # Execute with combined filters
-    source_filter = {
-        "sourceNames": ["core"],
-        "database": "production",
-        "freshnessStatus": "pass",
-        "tags": ["core", "customer"]
-    }
-    result = await sources_fetcher.fetch_sources(source_filter=source_filter)
-
-    # Verify the filter was passed correctly
-    call_args = mock_api_client.execute_query.call_args
-    variables = call_args[0][1]
-    assert variables["sourcesFilter"] == source_filter
-
-    # Verify the result
-    assert len(result) == 1
-    assert result[0]["sourceName"] == "core"
-
-
-async def test_fetch_sources_with_new_schema_filters(sources_fetcher, mock_api_client):
-    mock_response = {
-        "data": {
-            "environment": {
-                "applied": {
-                    "sources": {
-                        "pageInfo": {"hasNextPage": False, "endCursor": "cursor_end"},
-                        "edges": [
-                            {
-                                "node": {
-                                    "name": "customers",
-                                    "uniqueId": "source.test_project.analytics.customers",
-                                    "description": "Fresh customer data",
-                                    "sourceName": "analytics",
-                                    "resourceType": "source",
-                                    "freshness": {
-                                        "maxLoadedAt": "2024-01-15T10:30:00Z",
-                                        "maxLoadedAtTimeAgoInS": 3600,
-                                        "freshnessStatus": "pass"
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-            }
-        }
-    }
-
-    mock_api_client.execute_query.return_value = mock_response
-
-    # Execute with new schema filters
-    source_filter = {
-        "sourceNames": ["analytics", "staging"],
-        "schema": "prod", 
-        "freshnessStatus": "pass",
-        "tags": ["daily"]
-    }
-    result = await sources_fetcher.fetch_sources(source_filter=source_filter)
-
-    # Verify the filter was passed correctly
-    call_args = mock_api_client.execute_query.call_args
-    variables = call_args[0][1]
-    assert variables["sourcesFilter"] == source_filter
-
-    # Verify the result
-    assert len(result) == 1
-    assert result[0]["sourceName"] == "analytics"

@@ -7,7 +7,12 @@ from dbt_mcp.config.config_providers import (
     ConfigProvider,
     DiscoveryConfig,
 )
-from dbt_mcp.discovery.client import ExposuresFetcher, MetadataAPIClient, ModelsFetcher, SourcesFetcher
+from dbt_mcp.discovery.client import (
+    ExposuresFetcher,
+    MetadataAPIClient,
+    ModelsFetcher,
+    SourcesFetcher,
+)
 from dbt_mcp.prompts.prompts import get_prompt
 from dbt_mcp.tools.annotations import create_tool_annotations
 from dbt_mcp.tools.definitions import ToolDefinition
@@ -62,8 +67,17 @@ def create_discovery_tool_definitions(
     ) -> list[dict]:
         return await exposures_fetcher.fetch_exposure_details(exposure_name, unique_ids)
 
-    async def get_all_sources(source_filter: dict | None = None) -> list[dict]:
-        return await sources_fetcher.fetch_sources(source_filter)
+    async def get_all_sources(
+        source_names: list[str] | None = None,
+        unique_ids: list[str] | None = None,
+        database: str | None = None,
+        schema: str | None = None,
+        freshness_status: str | None = None,
+        tags: list[str] | None = None,
+    ) -> list[dict]:
+        return await sources_fetcher.fetch_sources(
+            source_names, unique_ids, database, schema, freshness_status, tags
+        )
 
     return [
         ToolDefinition(
