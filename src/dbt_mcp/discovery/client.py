@@ -379,10 +379,6 @@ class ModelFilter(TypedDict, total=False):
 class SourceFilter(TypedDict, total=False):
     sourceNames: list[str] | None        # Filter by source names
     uniqueIds: list[str] | None          # Filter by specific source table IDs
-    database: str | None                 # Filter by database
-    schema: str | None                   # Filter by schema
-    freshnessStatus: str | None          # Filter by freshness: "pass", "warn", "error"
-    tags: list[str] | None               # Filter by tags
 
 
 class ModelsFetcher:

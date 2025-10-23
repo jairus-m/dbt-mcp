@@ -91,14 +91,10 @@ async def test_fetch_sources_single_page(sources_fetcher, mock_api_client):
     # Single filter parameters
     ({"source_names": ["external_api"]}, {"sourceNames": ["external_api"]}),
     ({"unique_ids": ["source.test_project.raw_data.customers"]}, {"uniqueIds": ["source.test_project.raw_data.customers"]}),
-    ({"database": "analytics"}, {"database": "analytics"}),
-    ({"schema": "prod"}, {"schema": "prod"}),
-    ({"freshness_status": "pass"}, {"freshnessStatus": "pass"}),
-    ({"tags": ["analytics", "daily"]}, {"tags": ["analytics", "daily"]}),
     # Combined filters
     (
-        {"source_names": ["core"], "database": "production", "freshness_status": "pass", "tags": ["core"]},
-        {"sourceNames": ["core"], "database": "production", "freshnessStatus": "pass", "tags": ["core"]}
+        {"source_names": ["core"], "unique_ids": ["source.test_project.core.users"]},
+        {"sourceNames": ["core"], "uniqueIds": ["source.test_project.core.users"]}
     ),
 ])
 async def test_fetch_sources_with_filters(sources_fetcher, mock_api_client, filter_params, expected_filter):
