@@ -65,13 +65,9 @@ def create_discovery_tool_definitions(
     async def get_all_sources(
         source_names: list[str] | None = None,
         unique_ids: list[str] | None = None,
-        database: str | None = None,
-        schema: str | None = None,
-        freshness_status: str | None = None,
-        tags: list[str] | None = None,
     ) -> list[dict]:
         return await sources_fetcher.fetch_sources(
-            source_names, unique_ids, database, schema, freshness_status, tags
+            source_names, unique_ids
         )
 
     return [
