@@ -649,10 +649,6 @@ class SourcesFetcher:
         self,
         source_names: list[str] | None = None,
         unique_ids: list[str] | None = None,
-        database: str | None = None,
-        schema: str | None = None,
-        freshness_status: str | None = None,
-        tags: list[str] | None = None,
     ) -> list[dict]:
         # Build the source_filter dict from individual parameters
         source_filter: SourceFilter = {}
@@ -660,14 +656,6 @@ class SourcesFetcher:
             source_filter["sourceNames"] = source_names
         if unique_ids is not None:
             source_filter["uniqueIds"] = unique_ids
-        if database is not None:
-            source_filter["database"] = database
-        if schema is not None:
-            source_filter["schema"] = schema
-        if freshness_status is not None:
-            source_filter["freshnessStatus"] = freshness_status
-        if tags is not None:
-            source_filter["tags"] = tags
 
         has_next_page = True
         after_cursor: str = ""
