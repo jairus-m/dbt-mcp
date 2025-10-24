@@ -7,7 +7,12 @@ from dbt_mcp.config.config_providers import (
     ConfigProvider,
     DiscoveryConfig,
 )
-from dbt_mcp.discovery.client import ExposuresFetcher, MetadataAPIClient, ModelsFetcher, SourcesFetcher  
+from dbt_mcp.discovery.client import (
+    ExposuresFetcher,
+    MetadataAPIClient,
+    ModelsFetcher,
+    SourcesFetcher,
+)
 from dbt_mcp.prompts.prompts import get_prompt
 from dbt_mcp.tools.annotations import create_tool_annotations
 from dbt_mcp.tools.definitions import ToolDefinition
@@ -66,9 +71,7 @@ def create_discovery_tool_definitions(
         source_names: list[str] | None = None,
         unique_ids: list[str] | None = None,
     ) -> list[dict]:
-        return await sources_fetcher.fetch_sources(
-            source_names, unique_ids
-        )
+        return await sources_fetcher.fetch_sources(source_names, unique_ids)
 
     return [
         ToolDefinition(

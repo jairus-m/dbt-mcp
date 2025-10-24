@@ -270,7 +270,7 @@ async def test_fetch_sources(sources_fetcher: SourcesFetcher):
 
     # Basic validation of the response
     assert isinstance(results, list)
-    
+
     # If sources exist, validate their structure
     if len(results) > 0:
         for source in results:
@@ -279,15 +279,15 @@ async def test_fetch_sources(sources_fetcher: SourcesFetcher):
             assert "sourceName" in source
             assert "resourceType" in source
             assert source["resourceType"] == "source"
-            
+
             # Validate types
             assert isinstance(source["name"], str)
             assert isinstance(source["uniqueId"], str)
             assert isinstance(source["sourceName"], str)
-            
+
             # Check for description (may be None)
             assert "description" in source
-            
+
             # Validate freshness data if present
             if "freshness" in source and source["freshness"]:
                 freshness = source["freshness"]
@@ -296,9 +296,13 @@ async def test_fetch_sources(sources_fetcher: SourcesFetcher):
                 if "freshnessStatus" in freshness:
                     assert isinstance(freshness["freshnessStatus"], str)
                 if "maxLoadedAt" in freshness:
-                    assert freshness["maxLoadedAt"] is None or isinstance(freshness["maxLoadedAt"], str)
+                    assert freshness["maxLoadedAt"] is None or isinstance(
+                        freshness["maxLoadedAt"], str
+                    )
                 if "maxLoadedAtTimeAgoInS" in freshness:
-                    assert freshness["maxLoadedAtTimeAgoInS"] is None or isinstance(freshness["maxLoadedAtTimeAgoInS"], int)
+                    assert freshness["maxLoadedAtTimeAgoInS"] is None or isinstance(
+                        freshness["maxLoadedAtTimeAgoInS"], int
+                    )
 
 
 @pytest.mark.asyncio
@@ -306,62 +310,66 @@ async def test_fetch_sources_with_filter(sources_fetcher: SourcesFetcher):
     """Test sources fetching with filter."""
     # First get all sources to find a valid source name
     all_sources = await sources_fetcher.fetch_sources()
-    
+
     if len(all_sources) > 0:
         # Pick the first source name for filtering
         source_name = all_sources[0]["sourceName"]
-        
+
         # Test filtering by source name
         filtered_results = await sources_fetcher.fetch_sources(
             source_names=[source_name]
         )
-        
+
         # Validate filtered results
         assert isinstance(filtered_results, list)
-        
+
         # All results should have the specified source name
         for source in filtered_results:
             assert source["sourceName"] == source_name
 
 
-@pytest.mark.asyncio 
+@pytest.mark.asyncio
 async def test_get_all_sources_tool():
     """Test the get_all_sources tool function integration."""
     from dbt_mcp.config.config_providers import DefaultDiscoveryConfigProvider
     from dbt_mcp.config.settings import CredentialsProvider, DbtMcpSettings
     from dbt_mcp.discovery.tools import create_discovery_tool_definitions
-    
+
     # Set up environment variables needed by DbtMcpSettings
     host = os.getenv("DBT_HOST")
     token = os.getenv("DBT_TOKEN")
     prod_env_id = os.getenv("DBT_PROD_ENV_ID")
 
     if not host or not token or not prod_env_id:
-        pytest.skip("DBT_HOST, DBT_TOKEN, and DBT_PROD_ENV_ID environment variables are required")
+        pytest.skip(
+            "DBT_HOST, DBT_TOKEN, and DBT_PROD_ENV_ID environment variables are required"
+        )
 
     # Create settings and config provider
     settings = DbtMcpSettings()  # type: ignore
     credentials_provider = CredentialsProvider(settings)
     config_provider = DefaultDiscoveryConfigProvider(credentials_provider)
-    
+
     # Create tool definitions
     tool_definitions = create_discovery_tool_definitions(config_provider)
-    
+
     # Find the get_all_sources tool
     get_all_sources_tool = None
     for tool_def in tool_definitions:
         if tool_def.get_name() == "get_all_sources":
             get_all_sources_tool = tool_def
             break
-    
-    assert get_all_sources_tool is not None, "get_all_sources tool not found in tool definitions"
-    
+
+    assert get_all_sources_tool is not None, (
+        "get_all_sources tool not found in tool definitions"
+    )
+
     # Execute the tool function
     result = await get_all_sources_tool.fn()
-    
+
     # Validate the result
     assert isinstance(result, list)
-    
+
     # If sources exist, validate structure
     if len(result) > 0:
         for source in result:

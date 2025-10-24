@@ -29,8 +29,8 @@ async def test_fetch_sources_single_page(sources_fetcher, mock_api_client):
                                     "freshness": {
                                         "maxLoadedAt": "2024-01-15T10:30:00Z",
                                         "maxLoadedAtTimeAgoInS": 3600,
-                                        "freshnessStatus": "pass"
-                                    }
+                                        "freshnessStatus": "pass",
+                                    },
                                 }
                             },
                             {
@@ -43,11 +43,11 @@ async def test_fetch_sources_single_page(sources_fetcher, mock_api_client):
                                     "freshness": {
                                         "maxLoadedAt": "2024-01-15T11:00:00Z",
                                         "maxLoadedAtTimeAgoInS": 1800,
-                                        "freshnessStatus": "warn"
-                                    }
+                                        "freshnessStatus": "warn",
+                                    },
                                 }
-                            }
-                        ]
+                            },
+                        ],
                     }
                 }
             }
@@ -63,14 +63,14 @@ async def test_fetch_sources_single_page(sources_fetcher, mock_api_client):
     # Verify the API was called correctly
     mock_api_client.execute_query.assert_called_once()
     call_args = mock_api_client.execute_query.call_args
-    
+
     # Check that the GraphQL query contains expected elements
     query = call_args[0][0]
     assert "GetSources" in query
     assert "environment" in query
     assert "applied" in query
     assert "sources" in query
-    
+
     # Check variables
     variables = call_args[0][1]
     assert variables["environmentId"] == 123
@@ -87,17 +87,28 @@ async def test_fetch_sources_single_page(sources_fetcher, mock_api_client):
     assert result[1]["freshness"]["freshnessStatus"] == "warn"
 
 
-@pytest.mark.parametrize("filter_params,expected_filter", [
-    # Single filter parameters
-    ({"source_names": ["external_api"]}, {"sourceNames": ["external_api"]}),
-    ({"unique_ids": ["source.test_project.raw_data.customers"]}, {"uniqueIds": ["source.test_project.raw_data.customers"]}),
-    # Combined filters
-    (
-        {"source_names": ["core"], "unique_ids": ["source.test_project.core.users"]},
-        {"sourceNames": ["core"], "uniqueIds": ["source.test_project.core.users"]}
-    ),
-])
-async def test_fetch_sources_with_filters(sources_fetcher, mock_api_client, filter_params, expected_filter):
+@pytest.mark.parametrize(
+    "filter_params,expected_filter",
+    [
+        # Single filter parameters
+        ({"source_names": ["external_api"]}, {"sourceNames": ["external_api"]}),
+        (
+            {"unique_ids": ["source.test_project.raw_data.customers"]},
+            {"uniqueIds": ["source.test_project.raw_data.customers"]},
+        ),
+        # Combined filters
+        (
+            {
+                "source_names": ["core"],
+                "unique_ids": ["source.test_project.core.users"],
+            },
+            {"sourceNames": ["core"], "uniqueIds": ["source.test_project.core.users"]},
+        ),
+    ],
+)
+async def test_fetch_sources_with_filters(
+    sources_fetcher, mock_api_client, filter_params, expected_filter
+):
     """Test that various filter parameters are correctly converted to GraphQL filter format."""
     mock_response = {
         "data": {
@@ -116,11 +127,11 @@ async def test_fetch_sources_with_filters(sources_fetcher, mock_api_client, filt
                                     "freshness": {
                                         "maxLoadedAt": "2024-01-15T10:30:00Z",
                                         "maxLoadedAtTimeAgoInS": 3600,
-                                        "freshnessStatus": "pass"
-                                    }
+                                        "freshnessStatus": "pass",
+                                    },
                                 }
                             }
-                        ]
+                        ],
                     }
                 }
             }
@@ -149,7 +160,7 @@ async def test_fetch_sources_empty_response(sources_fetcher, mock_api_client):
                 "applied": {
                     "sources": {
                         "pageInfo": {"hasNextPage": False, "endCursor": None},
-                        "edges": []
+                        "edges": [],
                     }
                 }
             }
@@ -182,11 +193,11 @@ async def test_fetch_sources_pagination(sources_fetcher, mock_api_client):
                                     "freshness": {
                                         "maxLoadedAt": "2024-01-15T10:30:00Z",
                                         "maxLoadedAtTimeAgoInS": 3600,
-                                        "freshnessStatus": "pass"
-                                    }
+                                        "freshnessStatus": "pass",
+                                    },
                                 }
                             }
-                        ]
+                        ],
                     }
                 }
             }
@@ -199,7 +210,10 @@ async def test_fetch_sources_pagination(sources_fetcher, mock_api_client):
             "environment": {
                 "applied": {
                     "sources": {
-                        "pageInfo": {"hasNextPage": False, "endCursor": "cursor_page_1"},  # hasNextPage False stops pagination
+                        "pageInfo": {
+                            "hasNextPage": False,
+                            "endCursor": "cursor_page_1",
+                        },  # hasNextPage False stops pagination
                         "edges": [
                             {
                                 "node": {
@@ -211,11 +225,11 @@ async def test_fetch_sources_pagination(sources_fetcher, mock_api_client):
                                     "freshness": {
                                         "maxLoadedAt": "2024-01-15T11:00:00Z",
                                         "maxLoadedAtTimeAgoInS": 1800,
-                                        "freshnessStatus": "warn"
-                                    }
+                                        "freshnessStatus": "warn",
+                                    },
                                 }
                             }
-                        ]
+                        ],
                     }
                 }
             }
@@ -223,23 +237,26 @@ async def test_fetch_sources_pagination(sources_fetcher, mock_api_client):
     }
 
     # Set up mock to return different responses for each call
-    mock_api_client.execute_query.side_effect = [first_page_response, second_page_response]
+    mock_api_client.execute_query.side_effect = [
+        first_page_response,
+        second_page_response,
+    ]
 
     result = await sources_fetcher.fetch_sources()
 
     # Should have called twice due to pagination
     assert mock_api_client.execute_query.call_count == 2
-    
+
     # Check that the second call includes the cursor from the first response
     first_call_args = mock_api_client.execute_query.call_args_list[0]
     second_call_args = mock_api_client.execute_query.call_args_list[1]
-    
+
     # First call should have empty after cursor
     assert first_call_args[0][1]["after"] == ""
-    
+
     # Second call should have the cursor from first response
     assert second_call_args[0][1]["after"] == "cursor_page_1"
-    
+
     # Should have both results
     assert len(result) == 2
     assert result[0]["name"] == "customers"
@@ -247,14 +264,16 @@ async def test_fetch_sources_pagination(sources_fetcher, mock_api_client):
 
 
 @patch("dbt_mcp.discovery.client.raise_gql_error")
-async def test_fetch_sources_graphql_error_handling(mock_raise_gql_error, sources_fetcher, mock_api_client):
+async def test_fetch_sources_graphql_error_handling(
+    mock_raise_gql_error, sources_fetcher, mock_api_client
+):
     mock_response = {
         "data": {
             "environment": {
                 "applied": {
                     "sources": {
                         "pageInfo": {"hasNextPage": False, "endCursor": None},
-                        "edges": []
+                        "edges": [],
                     }
                 }
             }
@@ -263,7 +282,7 @@ async def test_fetch_sources_graphql_error_handling(mock_raise_gql_error, source
 
     # Configure the mock to raise GraphQLError when called
     mock_raise_gql_error.side_effect = GraphQLError("Test GraphQL error")
-    
+
     mock_api_client.execute_query.return_value = mock_response
 
     # Verify that fetch_sources raises GraphQLError
