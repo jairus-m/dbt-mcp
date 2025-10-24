@@ -200,6 +200,8 @@ class GraphQLQueries:
         }
         ... on SourceAppliedStateNestedNode {
             resourceType
+            sourceName
+            uniqueId
             name
             description
         }
@@ -286,9 +288,12 @@ class GraphQLQueries:
                             node {
                                 name
                                 uniqueId
+                                identifier
                                 description
                                 sourceName
                                 resourceType
+                                database
+                                schema
                                 freshness {
                                     maxLoadedAt
                                     maxLoadedAtTimeAgoInS
@@ -377,8 +382,8 @@ class ModelFilter(TypedDict, total=False):
 
 
 class SourceFilter(TypedDict, total=False):
-    sourceNames: list[str] | None        # Filter by source names
-    uniqueIds: list[str] | None          # Filter by specific source table IDs
+    sourceNames: list[str] | None  # Filter by source names
+    uniqueIds: list[str] | None  # Filter by specific source table IDs
 
 
 class ModelsFetcher:
@@ -646,8 +651,8 @@ class SourcesFetcher:
         source_names: list[str] | None = None,
         unique_ids: list[str] | None = None,
     ) -> list[dict]:
-        # Build the source_filter dict from individual parameters
-        source_filter: SourceFilter = {}
+        # Build the GraphQL filter
+        source_filter: dict[str, list[str]] = {}
         if source_names is not None:
             source_filter["sourceNames"] = source_names
         if unique_ids is not None:
@@ -657,12 +662,14 @@ class SourcesFetcher:
         after_cursor: str = ""
         all_edges: list[dict] = []
 
-        while has_next_page and len(all_edges) < MAX_NUM_MODELS:  # Reuse MAX_NUM_MODELS limit
+        while (
+            has_next_page and len(all_edges) < MAX_NUM_MODELS
+        ):  # Reuse MAX_NUM_MODELS limit
             variables = {
                 "environmentId": await self.get_environment_id(),
                 "after": after_cursor,
                 "first": PAGE_SIZE,
-                "sourcesFilter": source_filter or {}
+                "sourcesFilter": source_filter,
             }
 
             result = await self.api_client.execute_query(
@@ -670,9 +677,7 @@ class SourcesFetcher:
             )
             all_edges.extend(self._parse_response_to_json(result))
 
-            page_info = result["data"]["environment"]["applied"]["sources"][
-                "pageInfo"
-            ]
+            page_info = result["data"]["environment"]["applied"]["sources"]["pageInfo"]
             has_next_page = page_info.get("hasNextPage", False)
             after_cursor = page_info.get("endCursor")
 
