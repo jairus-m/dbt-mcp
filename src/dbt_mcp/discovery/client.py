@@ -651,8 +651,8 @@ class SourcesFetcher:
         source_names: list[str] | None = None,
         unique_ids: list[str] | None = None,
     ) -> list[dict]:
-        # Build the GraphQL filter
-        source_filter: dict[str, list[str]] = {}
+        # Build the source_filter dict from individual parameters
+        source_filter: SourceFilter = {}
         if source_names is not None:
             source_filter["sourceNames"] = source_names
         if unique_ids is not None:
