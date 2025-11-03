@@ -10,7 +10,7 @@ from dbt_mcp.config.config_providers import (
 )
 from dbt_mcp.dbt_admin.client import DbtAdminAPIClient
 from dbt_mcp.dbt_admin.constants import JobRunStatus, STATUS_MAP
-from dbt_mcp.dbt_admin.run_results_errors import ErrorFetcher
+from dbt_mcp.dbt_admin.run_artifacts import ErrorFetcher, WarningFetcher
 from dbt_mcp.prompts.prompts import get_prompt
 from dbt_mcp.tools.annotations import create_tool_annotations
 from dbt_mcp.tools.definitions import ToolDefinition
@@ -126,21 +126,27 @@ def create_admin_api_tool_definitions(
             admin_api_config.account_id, run_id, artifact_path, step
         )
 
-    async def get_job_run_error(run_id: int) -> dict[str, Any] | str:
+    async def get_job_run_error(run_id: int) -> dict[str, Any]:
         """Get focused error information for a failed job run."""
-        try:
-            admin_api_config = await admin_api_config_provider.get_config()
-            run_details = await admin_client.get_job_run_details(
-                admin_api_config.account_id, run_id, include_logs=True
-            )
-            error_fetcher = ErrorFetcher(
-                run_id, run_details, admin_client, admin_api_config
-            )
-            return await error_fetcher.analyze_run_errors()
+        admin_api_config = await admin_api_config_provider.get_config()
+        run_details = await admin_client.get_job_run_details(
+            admin_api_config.account_id, run_id, include_logs=True
+        )
+        error_fetcher = ErrorFetcher(
+            run_id, run_details, admin_client, admin_api_config
+        )
+        return await error_fetcher.analyze_run_errors()
 
-        except Exception as e:
-            logger.error(f"Error getting run error details for {run_id}: {e}")
-            return str(e)
+    async def get_job_run_warnings(run_id: int) -> dict[str, Any]:
+        """Get detailed warning information for a successful job run."""
+        admin_api_config = await admin_api_config_provider.get_config()
+        run_details = await admin_client.get_job_run_details(
+            admin_api_config.account_id, run_id
+        )
+        warning_fetcher = WarningFetcher(
+            run_id, run_details, admin_client, admin_api_config
+        )
+        return await warning_fetcher.analyze_run_warnings()
 
     return [
         ToolDefinition(
@@ -238,6 +244,16 @@ def create_admin_api_tool_definitions(
             fn=get_job_run_error,
             annotations=create_tool_annotations(
                 title="Get Job Run Error",
+                read_only_hint=True,
+                destructive_hint=False,
+                idempotent_hint=True,
+            ),
+        ),
+        ToolDefinition(
+            description=get_prompt("admin_api/get_job_run_warnings"),
+            fn=get_job_run_warnings,
+            annotations=create_tool_annotations(
+                title="Get Job Run Warnings",
                 read_only_hint=True,
                 destructive_hint=False,
                 idempotent_hint=True,
