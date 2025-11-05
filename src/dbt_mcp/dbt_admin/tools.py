@@ -126,27 +126,41 @@ def create_admin_api_tool_definitions(
             admin_api_config.account_id, run_id, artifact_path, step
         )
 
-    async def get_job_run_error(run_id: int) -> dict[str, Any]:
-        """Get focused error information for a failed job run."""
+    async def get_job_run_error(
+        run_id: int, include_warnings: bool = False, warning_only: bool = False
+    ) -> dict[str, Any]:
+        """Get focused error/warning information for a job run."""
         admin_api_config = await admin_api_config_provider.get_config()
+
+        if warning_only:
+            run_details = await admin_client.get_job_run_details(
+                admin_api_config.account_id, run_id
+            )
+            warning_fetcher = WarningFetcher(
+                run_id, run_details, admin_client, admin_api_config
+            )
+            return await warning_fetcher.analyze_run_warnings()
+
         run_details = await admin_client.get_job_run_details(
             admin_api_config.account_id, run_id, include_logs=True
         )
         error_fetcher = ErrorFetcher(
             run_id, run_details, admin_client, admin_api_config
         )
-        return await error_fetcher.analyze_run_errors()
+        error_result = await error_fetcher.analyze_run_errors()
 
-    async def get_job_run_warnings(run_id: int) -> dict[str, Any]:
-        """Get detailed warning information for a successful job run."""
-        admin_api_config = await admin_api_config_provider.get_config()
-        run_details = await admin_client.get_job_run_details(
-            admin_api_config.account_id, run_id
-        )
-        warning_fetcher = WarningFetcher(
-            run_id, run_details, admin_client, admin_api_config
-        )
-        return await warning_fetcher.analyze_run_warnings()
+        if include_warnings:
+            warning_fetcher = WarningFetcher(
+                run_id, run_details, admin_client, admin_api_config
+            )
+            warning_result = await warning_fetcher.analyze_run_warnings()
+
+            return {
+                **error_result,
+                "warnings": warning_result,
+            }
+
+        return error_result
 
     return [
         ToolDefinition(
@@ -244,16 +258,6 @@ def create_admin_api_tool_definitions(
             fn=get_job_run_error,
             annotations=create_tool_annotations(
                 title="Get Job Run Error",
-                read_only_hint=True,
-                destructive_hint=False,
-                idempotent_hint=True,
-            ),
-        ),
-        ToolDefinition(
-            description=get_prompt("admin_api/get_job_run_warnings"),
-            fn=get_job_run_warnings,
-            annotations=create_tool_annotations(
-                title="Get Job Run Warnings",
                 read_only_hint=True,
                 destructive_hint=False,
                 idempotent_hint=True,

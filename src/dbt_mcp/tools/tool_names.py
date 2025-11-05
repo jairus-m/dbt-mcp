@@ -53,7 +53,6 @@ class ToolName(Enum):
     LIST_JOB_RUN_ARTIFACTS = "list_job_run_artifacts"
     GET_JOB_RUN_ARTIFACT = "get_job_run_artifact"
     GET_JOB_RUN_ERROR = "get_job_run_error"
-    GET_JOB_RUN_WARNINGS = "get_job_run_warnings"
 
     # dbt-codegen tools
     GENERATE_SOURCE = "generate_source"

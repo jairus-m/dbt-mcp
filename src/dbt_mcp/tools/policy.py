@@ -138,9 +138,6 @@ tool_policies = {
     ToolName.GET_JOB_RUN_ERROR.value: ToolPolicy(
         name=ToolName.GET_JOB_RUN_ERROR.value, behavior=ToolBehavior.METADATA
     ),
-    ToolName.GET_JOB_RUN_WARNINGS.value: ToolPolicy(
-        name=ToolName.GET_JOB_RUN_WARNINGS.value, behavior=ToolBehavior.METADATA
-    ),
     # dbt-codegen tools
     ToolName.GENERATE_SOURCE.value: ToolPolicy(
         name=ToolName.GENERATE_SOURCE.value, behavior=ToolBehavior.METADATA
