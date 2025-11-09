@@ -134,7 +134,7 @@ def create_admin_api_tool_definitions(
 
         if warning_only:
             run_details = await admin_client.get_job_run_details(
-                admin_api_config.account_id, run_id
+                admin_api_config.account_id, run_id, include_logs=True
             )
             warning_fetcher = WarningFetcher(
                 run_id, run_details, admin_client, admin_api_config
