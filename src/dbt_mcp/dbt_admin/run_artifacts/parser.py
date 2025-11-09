@@ -27,7 +27,20 @@ logger = logging.getLogger(__name__)
 
 
 class JobRunFetcher:
-    """Base class for shared run details artifacts fetching and source freshness checking."""
+    """Base class for fetching and parsing dbt Cloud job run artifacts.
+
+    Provides shared functionality for ErrorFetcher and WarningFetcher to:
+    - Fetch run_results.json artifacts from specific steps
+    - Fetch sources.json artifacts for source freshness checks
+    - Parse source freshness results (errors/warnings)
+
+    Both ErrorFetcher and WarningFetcher inherit from this class but process
+    different sets of steps:
+    - ErrorFetcher: processes failed steps (status == ERROR)
+    - WarningFetcher: processes successful steps (status == SUCCESS)
+
+    Each fetcher instance is single-use and processes one job run analysis.
+    """
 
     def __init__(
         self,
@@ -36,6 +49,14 @@ class JobRunFetcher:
         client: DbtAdminAPIClient,
         admin_api_config: AdminApiConfig,
     ):
+        """Initialize the job run fetcher.
+
+        Args:
+            run_id: The dbt Cloud job run ID
+            run_details: Raw job run details from the dbt Admin API
+            client: dbt Admin API client for making artifact requests
+            admin_api_config: Configuration containing account_id and credentials
+        """
         self.run_id = run_id
         self.run_details = run_details
         self.client = client
@@ -90,6 +111,7 @@ class JobRunFetcher:
         Check for source freshness results (errors/warnings) in sources.json artifact.
         Note: Only method used by both ErrorFetcher and WarningFetcher that differ in usage
         with params so including a complete docstring.
+
         Args:
             step: The run step to check for source freshness results
             status_filter: List of status values to filter for (["error", "fail"] or ["warn"])
@@ -514,6 +536,9 @@ class WarningFetcher(JobRunFetcher):
     def _extract_log_warnings(self, step: RunStepSchema) -> list[OutputResultSchema]:
         """Extract warnings from step logs, matching on [WARNING] log entries."""
         if not step.logs:
+            return []
+
+        if "[WARNING]" not in step.logs:
             return []
 
         # Remove ANSI color codes to focus on text

@@ -1,3 +1,0 @@
-kind: Enhancement or New Feature
-body: Consolidate get_job_run_error to support both errors and warnings with optional parameters (include_warnings, warning_only)
-time: 2025-11-03T15:22:37.242504-08:00
