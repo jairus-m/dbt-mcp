@@ -545,6 +545,9 @@ class WarningFetcher(JobRunFetcher):
         if "[WARNING]" not in step.logs:
             return []
 
+        # TODO: Fusion logs differ from core (currently core only)
+        # Need to explore and implement a solution for this
+
         # Remove ANSI color codes to focus on text
         ansi_escape = re.compile(r"\x1b\[[0-9;]*m")
         clean_logs = ansi_escape.sub("", step.logs)
@@ -644,7 +647,7 @@ class WarningFetcher(JobRunFetcher):
     def _create_summary(
         self,
         warning_steps: list[OutputStepSchema],
-        log_warnings: list[OutputResultSchema],
+        log_warning_steps: list[OutputResultSchema],
     ) -> dict[str, int]:
         """Create a summary of warning counts."""
         test_warnings = 0
@@ -658,14 +661,14 @@ class WarningFetcher(JobRunFetcher):
                 elif "source." in unique_id:
                     freshness_warnings += 1
 
-        log_warnings_count = len(log_warnings)
-        total_warnings = test_warnings + freshness_warnings + log_warnings_count
+        log_warnings = len(log_warning_steps)
+        total_warnings = test_warnings + freshness_warnings + log_warnings
 
         return {
             "total_warnings": total_warnings,
             "test_warnings": test_warnings,
             "freshness_warnings": freshness_warnings,
-            "log_warnings": log_warnings_count,
+            "log_warnings": log_warnings,
         }
 
     def _empty_response(self, reason: str = "No warnings found") -> dict[str, Any]:
