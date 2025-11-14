@@ -3,15 +3,14 @@ import logging
 import re
 from typing import Any
 
-from pydantic import ValidationError
-
 from dbt_mcp.config.config_providers import AdminApiConfig
 from dbt_mcp.dbt_admin.client import DbtAdminAPIClient
+
 from dbt_mcp.dbt_admin.constants import (
     STATUS_MAP,
+    TRUNCATED_LOGS_LENGTH,
     JobRunStatus,
     RunResultsStatus,
-    TRUNCATED_LOGS_LENGTH,
 )
 from dbt_mcp.dbt_admin.run_artifacts.config import (
     OutputResultSchema,
@@ -22,6 +21,8 @@ from dbt_mcp.dbt_admin.run_artifacts.config import (
     RunStepSchema,
     SourcesArtifactSchema,
 )
+from dbt_mcp.errors import ArtifactRetrievalError
+from pydantic import ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +78,7 @@ class JobRunFetcher:
                 logger.info(f"Got run_results.json from step {step_index}")
                 return run_results_content
             return None
-        except Exception as e:
+        except ArtifactRetrievalError as e:
             logger.debug(f"No run_results.json for step {step_index}: {e}")
             return None
 
@@ -96,7 +97,7 @@ class JobRunFetcher:
                 logger.info(f"Got sources.json from step {step_index}")
                 return sources_content
             return None
-        except Exception as e:
+        except ArtifactRetrievalError as e:
             logger.debug(f"No sources.json for step {step_index}: {e}")
             return None
 
@@ -150,6 +151,9 @@ class JobRunFetcher:
                     finished_at=step.finished_at,
                     results=results,
                 )
+            return None
+        except ValidationError as e:
+            logger.debug(f"sources.json validation failed: {e}")
             return None
         except Exception as e:
             logger.debug(f"Error parsing sources.json: {e}")

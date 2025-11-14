@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock
 import pytest
 
 from dbt_mcp.dbt_admin.run_artifacts.parser import ErrorFetcher
+from dbt_mcp.errors import ArtifactRetrievalError
 
 
 @pytest.mark.parametrize(
@@ -118,7 +119,7 @@ async def test_error_scenarios(
     async def mock_get_artifact(account_id, run_id, artifact_path, step=None):  # noqa: ARG001
         artifact_content = step_index_to_artifacts.get(step)
         if artifact_content is None:
-            raise Exception("Artifact not available")
+            raise ArtifactRetrievalError("Artifact not available")
 
         # Determine if this artifact is sources.json or run_results.json based on structure
         is_sources_json = False
@@ -137,7 +138,7 @@ async def test_error_scenarios(
         elif artifact_path == "run_results.json" and is_run_results_json:
             return json.dumps(artifact_content)
 
-        raise Exception(f"{artifact_path} not available")
+        raise ArtifactRetrievalError(f"{artifact_path} not available")
 
     mock_client.get_job_run_artifact = AsyncMock(side_effect=mock_get_artifact)
 
