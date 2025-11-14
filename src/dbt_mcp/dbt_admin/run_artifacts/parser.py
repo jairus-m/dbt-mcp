@@ -279,7 +279,7 @@ class ErrorFetcher(JobRunFetcher):
         target = args.target if args else None
         step_name = failed_step.name
         finished_at = failed_step.finished_at
-        truncated_logs = self._truncated_logs(failed_step)
+        truncated_logs = self._get_truncated_logs(failed_step)
 
         if errors:
             return OutputStepSchema(
@@ -341,7 +341,7 @@ class ErrorFetcher(JobRunFetcher):
         relation_name = "No database relation"
         step_name = failed_step.name
         finished_at = failed_step.finished_at
-        truncated_logs = self._truncated_logs(failed_step)
+        truncated_logs = self._get_truncated_logs(failed_step)
 
         message = "run_results.json not available - returning logs"
 
@@ -353,7 +353,7 @@ class ErrorFetcher(JobRunFetcher):
             truncated_logs=truncated_logs,
         )
 
-    def _truncated_logs(self, step: RunStepSchema) -> str | None:
+    def _get_truncated_logs(self, step: RunStepSchema) -> str | None:
         """Truncate logs to the last N lines."""
         split_logs = step.logs.splitlines() if step.logs else []
         if len(split_logs) > TRUNCATED_LOGS_LENGTH:  # N = 50
