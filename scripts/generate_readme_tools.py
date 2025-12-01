@@ -4,39 +4,41 @@ import re
 import sys
 from pathlib import Path
 
-from dbt_mcp.tools.toolsets import Toolset, toolsets
+from dbt_mcp.tools.toolsets import toolsets
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)
 
 README_PATH = Path(__file__).parents[1] / "README.md"
 
-TOOLSET_TO_README_HEADING = {
-    Toolset.DBT_CLI: "dbt CLI commands",
-    Toolset.SEMANTIC_LAYER: "Semantic Layer",
-    Toolset.DISCOVERY: "Discovery",
-    Toolset.SQL: "SQL",
-    Toolset.ADMIN_API: "Admin API",
-    Toolset.DBT_CODEGEN: "Codegen",
-    Toolset.DBT_LSP: "dbt LSP",
-}
+
+def format_toolset_heading(toolset_value: str) -> str:
+    """
+    Format toolset enum value into a readable heading using regex.
+
+    Examples:
+        sql -> SQL
+        semantic_layer -> Semantic Layer
+        dbt_cli -> dbt CLI
+        admin_api -> Admin API
+    """
+    text = toolset_value.replace("_", " ").title()
+
+    # Uppercase common acronyms
+    text = re.sub(r"\b(Sql|Api|Cli|Lsp)\b", lambda m: m.group(1).upper(), text)
+
+    # "dbt" stylized as lowercase
+    text = re.sub(r"\bDbt\b", "dbt", text)
+
+    return text
 
 
 def generate_tools_section() -> str:
     """Generate the Tools section markdown from toolsets."""
-    # Validate all toolsets have README headings defined
-    missing_headings = set(toolsets.keys()) - set(TOOLSET_TO_README_HEADING.keys())
-    if missing_headings:
-        missing_names = [ts.name for ts in missing_headings]
-        raise ValueError(
-            f"Missing README headings for toolsets: {missing_names}\n"
-            f"Add them to TOOLSET_TO_README_HEADING in scripts/generate_readme_tools.py"
-        )
-
     lines = ["## Tools", ""]
 
     for toolset, tool_names in toolsets.items():
-        heading = TOOLSET_TO_README_HEADING[toolset]
+        heading = format_toolset_heading(toolset.value)
         lines.append(f"### {heading}")
 
         sorted_tools = sorted([tool.value for tool in tool_names])

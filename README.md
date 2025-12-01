@@ -44,7 +44,7 @@ The dbt MCP server architecture allows for your agent to connect to a variety of
 - `get_source_details`
 - `search`
 
-### dbt CLI commands
+### dbt CLI
 - `build`
 - `compile`
 - `docs`
@@ -66,7 +66,7 @@ The dbt MCP server architecture allows for your agent to connect to a variety of
 - `retry_job_run`
 - `trigger_job_run`
 
-### Codegen
+### dbt Codegen
 - `generate_model_yaml`
 - `generate_source`
 - `generate_staging_model`
