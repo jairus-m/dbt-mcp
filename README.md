@@ -35,14 +35,18 @@ The dbt MCP server architecture allows for your agent to connect to a variety of
 - `get_all_sources`
 - `get_exposure_details`
 - `get_exposures`
+- `get_macro_details`
 - `get_mart_models`
 - `get_model_children`
 - `get_model_details`
 - `get_model_health`
 - `get_model_parents`
 - `get_related_models`
+- `get_seed_details`
+- `get_semantic_model_details`
+- `get_snapshot_details`
 - `get_source_details`
-- `search`
+- `get_test_details`
 
 ### dbt CLI
 - `build`
