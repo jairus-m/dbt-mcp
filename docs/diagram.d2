@@ -28,33 +28,34 @@ classes: {
 mcp: dbt MCP server
 
 tools: Tools {
-  cli: dbt CLI\nlocal executable {
+  sql: SQL {
     style.border-radius: 8
   }
 
-  discovery: Discovery\nMetadata API {
+  semantic_layer: Semantic Layer {
     style.border-radius: 8
   }
 
-  sl: dbt Semantic Layer {
+  discovery: Discovery {
     style.border-radius: 8
   }
 
-  sql: SQL tools {
+  dbt_cli: dbt CLI {
     style.border-radius: 8
   }
 
-  lsp: dbt LSP tools {
+  admin_api: Admin API {
     style.border-radius: 8
   }
 
-  admin: Admin API tools {
+  dbt_codegen: dbt Codegen {
     style.border-radius: 8
   }
 
-  codegen: dbt-codegen tools {
+  dbt_lsp: dbt LSP {
     style.border-radius: 8
   }
+
 }
 
 mcp -- tools.*

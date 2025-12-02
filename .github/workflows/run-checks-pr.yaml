@@ -51,9 +51,9 @@ jobs:
       - name: Run tests
         run: task test:unit
 
-  # validates README.md tools documentation is up to date
-  validate-readme:
-    name: Validate README
+  # validates documentation is up to date
+  validate-docs:
+    name: Validate documentation (README.md and d2 docs/*)
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -68,5 +68,5 @@ jobs:
         id: setup-python
       - name: Install go-task
         run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
-      - name: Validate README tools section is up to date
-        run: task docs:tools CHECK_FLAG=--check
+      - name: Validate documentation is up to date
+        run: task docs:generate CHECK_FLAG=--check
