@@ -42,7 +42,7 @@ repos:
     hooks:
       - id: generate-docs
         name: Generate documentation from registered tools
-        entry: bash -c "task docs:generate && task d2"
+        entry: bash -c "task docs:generate CHECK_FLAG=--check"
         language: system
         files: ^(src/dbt_mcp/tools/(tool_names|toolsets)\.py|README\.md|docs/diagram\.d2)$
         pass_filenames: false
