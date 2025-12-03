@@ -53,7 +53,7 @@ jobs:
 
   # validates documentation is up to date
   validate-docs:
-    name: Validate documentation (README.md and d2 docs/*)
+    name: Validate tool docs
     runs-on: ubuntu-24.04
     permissions:
       contents: read
