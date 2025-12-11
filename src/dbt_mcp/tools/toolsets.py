@@ -27,6 +27,8 @@ proxied_tools: set[
         ToolName.EXECUTE_SQL,
         ToolName.GET_RELATED_MODELS,
         ToolName.SEARCH,
+        ToolName.FUSION_COMPILE_SQL,
+        ToolName.FUSION_GET_COLUMN_LINEAGE,
     ]
 ] = set(
     [
@@ -34,6 +36,8 @@ proxied_tools: set[
         ToolName.EXECUTE_SQL,
         ToolName.GET_RELATED_MODELS,
         ToolName.SEARCH,
+        ToolName.FUSION_COMPILE_SQL,
+        ToolName.FUSION_GET_COLUMN_LINEAGE,
     ]
 )
 
@@ -99,6 +103,8 @@ toolsets = {
     },
     Toolset.DBT_LSP: {
         ToolName.GET_COLUMN_LINEAGE,
+        ToolName.FUSION_COMPILE_SQL,
+        ToolName.FUSION_GET_COLUMN_LINEAGE,
     },
 }
 
