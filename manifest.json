@@ -2,7 +2,7 @@
     "manifest_version": "0.4",
     "name": "dbt-mcp",
     "display_name": "dbt MCP Server",
-    "version": "1.0.0",
+    "version": "0.1.0",
     "description": "A MCP (Model Context Protocol) server for interacting with dbt.",
     "long_description": "This MCP (Model Context Protocol) server provides various tools to interact with dbt. You can use this MCP server to provide AI agents with context of your project in dbt Core, dbt Fusion, and dbt Platform.",
     "author": {
