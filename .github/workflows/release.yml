@@ -105,6 +105,8 @@ jobs:
     needs: [create-release-tag, create-github-release]
     permissions:
       contents: write # required to upload release assets
+    env:
+      MCPB_PACKAGE_NAME: dbt-mcp.mcpb
 
     steps:
       - name: Checkout code
@@ -116,10 +118,10 @@ jobs:
         uses: ./.github/actions/setup-mcpb
 
       - name: Pack mcpb package
-        run: mcpb pack . dbt-mcp.mcpb
+        run: mcpb pack . $MCPB_PACKAGE_NAME
 
       - name: Clean and optimize bundle
-        run: mcpb clean dbt-mcp.mcpb
+        run: mcpb clean $MCPB_PACKAGE_NAME
 
       # Optional: if dbt wants to sign .mcpb, can uncomment
       # - name: Sign bundle
@@ -127,17 +129,17 @@ jobs:
       #     mcpb sign \
       #       -c <(echo "${{ secrets.MCPB_CERT }}") \
       #       -k <(echo "${{ secrets.MCPB_KEY }}") \
-      #       dbt-mcp.mcpb
+      #       $MCPB_PACKAGE_NAME
 
       # Verify step if signed
       # Tested locally, 12/19/25 with valid MCPB_CERT and MCPB_KEY pair
-      # but `mcpb verify` failed due to known mcpb bug: 
+      # but `mcpb verify` failed due to known mcpb bug:
       # https://github.com/modelcontextprotocol/mcpb/issues/21
       # - name: Verify bundle signature
-      #   run: mcpb verify dbt-mcp.mcpb
+      #   run: mcpb verify $MCPB_PACKAGE_NAME
 
       - name: Upload mcpb package to release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.create-release-tag.outputs.changie-latest }}
-          files: dbt-mcp.mcpb
+          files: ${{ env.MCPB_PACKAGE_NAME }}
