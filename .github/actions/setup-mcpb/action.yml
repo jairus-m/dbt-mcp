@@ -11,4 +11,4 @@ runs:
 
     - name: Install mcpb
       shell: bash
-      run: npm install -g @anthropic-ai/mcpb # should this be pinned?
+      run: npm install -g @anthropic-ai/mcpb@2.1.2

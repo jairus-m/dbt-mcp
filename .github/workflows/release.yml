@@ -139,7 +139,7 @@ jobs:
       #   run: mcpb verify $MCPB_PACKAGE_NAME
 
       - name: Upload mcpb package to release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2
         with:
           tag_name: ${{ needs.create-release-tag.outputs.changie-latest }}
           files: ${{ env.MCPB_PACKAGE_NAME }}
