@@ -113,15 +113,25 @@ jobs:
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # actions/checkout@v4
         with:
           ref: ${{ needs.create-release-tag.outputs.changie-latest }}
+          fetch-tags: true
 
-      - name: setup mcpb
+      - name: Setup Node.js
+        uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
+        with:
+          node-version: '20'
+
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda
+        with:
+          version: 10
+
+      - name: Build UI for oauth
+        run: cd ui && pnpm install && pnpm build                
+
+      - name: Setup mcpb
         uses: ./.github/actions/setup-mcpb
 
       - name: Pack mcpb package
         run: mcpb pack . $MCPB_PACKAGE_NAME
-
-      - name: Clean and optimize bundle
-        run: mcpb clean $MCPB_PACKAGE_NAME
 
       # Optional: if dbt wants to sign .mcpb, can uncomment
       # - name: Sign bundle
