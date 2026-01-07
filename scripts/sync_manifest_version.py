@@ -6,6 +6,8 @@ import sys
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)
 
+MANIFEST_PATH = "manifest.json"
+
 # Gets the most recent tag reachable from the current commit (similar to hatch-vcs)
 # so MCPB manifest version matches the package version
 result = subprocess.run(
@@ -21,8 +23,7 @@ if not version:
     sys.exit(1)
 
 # Update manifest.json
-manifest_path = "manifest.json"
-with open(manifest_path, "r+") as f:
+with open(MANIFEST_PATH, "r+") as f:
     data = json.load(f)
     old_version = data.get("version")
     data["version"] = version
@@ -30,4 +31,4 @@ with open(manifest_path, "r+") as f:
     json.dump(data, f, indent=4)
     f.truncate()
 
-logging.info(f"Wrote MCPB {manifest_path} version: {version}")
+logging.info(f"Wrote MCPB {MANIFEST_PATH} version: {version}")
