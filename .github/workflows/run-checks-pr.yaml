@@ -100,7 +100,7 @@ jobs:
 
   # validates mcpb manifest
   validate-mcpb:
-    name: Validate mcpb manifest # should this only run when manifest.json is changed?
+    name: Validate mcpb manifest
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -112,5 +112,7 @@ jobs:
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # actions/checkout@v4
       - name: setup mcpb
         uses: ./.github/actions/setup-mcpb
+      - name: Install go-task
+        run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
       - name: Validate manifest
-        run: mcpb validate ./manifest.json
+        run: task mcpb:validate
