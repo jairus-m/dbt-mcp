@@ -25,7 +25,6 @@ if not version:
 # Update manifest.json
 with open(MANIFEST_PATH, "r+") as f:
     data = json.load(f)
-    old_version = data.get("version")
     data["version"] = version
     f.seek(0)
     json.dump(data, f, indent=4)
