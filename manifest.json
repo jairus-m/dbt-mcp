@@ -54,7 +54,7 @@
     "user_config": {
         "dbt_host": {
             "default": "cloud.getdbt.com",
-            "description": "Your dbt platform instance hostname (e.g., cloud.getdbt.com). Authentication will be handled via OAuth login.",
+            "description": "Your dbt platform instance hostname (e.g., cloud.getdbt.com). You can find this in dbt platform by navigating to Dashboard, then Settings.",
             "required": true,
             "title": "dbt Platform Host",
             "type": "string"
