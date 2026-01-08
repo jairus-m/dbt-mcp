@@ -30,4 +30,4 @@ with open(MANIFEST_PATH, "r+") as f:
     json.dump(data, f, indent=4)
     f.truncate()
 
-logging.info(f"Wrote MCPB {MANIFEST_PATH} version: {version}")
+logger.info(f"Wrote MCPB {MANIFEST_PATH} version: {version}")
