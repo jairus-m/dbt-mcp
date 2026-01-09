@@ -127,3 +127,25 @@ tasks:
       - docs/d2.png
     cmds:
       - d2 docs/diagram.d2 docs/d2.png --pad 20
+
+  mcpb:pack:
+    desc: "Pack mcpb bundle"
+    cmds:
+      - (cd ui && pnpm install && pnpm build)
+      - uv run scripts/sync_manifest_version.py
+      - mcpb pack . {{.MCPB_PACKAGE_NAME | default "dbt-mcp.mcpb"}}
+
+  mcpb:validate:
+    desc: "Validate mcpb manifest"
+    cmds:
+      - mcpb validate ./manifest.json
+
+  mcpb:sign-and-verify:
+    desc: "Sign and verify mcpb bundle"
+    vars:
+      MCPB_CERT: '{{.MCPB_CERT}}'
+      MCPB_KEY: '{{.MCPB_KEY}}'
+      MCPB_PACKAGE_NAME: '{{.MCPB_PACKAGE_NAME | default "dbt-mcp.mcpb"}}'
+    cmds:
+      - mcpb sign -c <(echo "{{.MCPB_CERT}}") -k <(echo "{{.MCPB_KEY}}") {{.MCPB_PACKAGE_NAME}}
+      - mcpb verify {{.MCPB_PACKAGE_NAME}}
