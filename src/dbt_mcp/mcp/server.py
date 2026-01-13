@@ -105,8 +105,9 @@ async def app_lifespan(server: FastMCP[Any]) -> AsyncIterator[bool | None]:
         raise TypeError("app_lifespan can only be used with DbtMCP servers")
     logger.info("Starting MCP server")
     try:
-        # register proxied tools inside the app lifespan to make StreamableHTTP
-        # session live on the same event loop as the running server
+        # register proxied tools inside the app lifespan to ensure the StreamableHTTP client (specific
+        # to dbt Platform connection) lives on the same event loop as the running server
+        # this avoids anyio cancel scope violations (see issue #498)
         if server.config.proxied_tool_config_provider:
             logger.info("Registering proxied tools")
             await register_proxied_tools(
